@@ -27,7 +27,7 @@ static struct {
     int car_cnt;
 } simulator_state;
 
-pthread_mutex_t printf_mutex;
+static pthread_mutex_t printf_mutex;
 int sync_printf(const char *format, ...) {
     va_list args;
     va_start(args, format);
@@ -94,8 +94,8 @@ static void *einfahrt_simulator(void *args) {
     }
 }
 
-call_queue_t ausfahrt_leave_queue;
-sem_t ausfahrt_sem_left;
+static call_queue_t ausfahrt_leave_queue;
+static sem_t ausfahrt_sem_left;
 
 static void *ausfahrt_simulator(void *args) {
     while (1) {
@@ -187,7 +187,7 @@ static void *car(void *args) {
     }
 }
 
-int thread_args[NUM_CARS];
+static int thread_args[NUM_CARS];
 
 void init_simulator() {
     pthread_mutex_init(&printf_mutex, NULL);
