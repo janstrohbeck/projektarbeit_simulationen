@@ -1,7 +1,7 @@
 package body Control_Procedures is
     procedure Temp_Convert(TR : Temp_Reading; HS : out Heater_Setting) is
     begin
-        if TR < 30 then
+        if TR < 20 then
             HS := On;
         else
             HS := Off;
@@ -11,13 +11,13 @@ package body Control_Procedures is
     procedure Pressure_Convert(PR : Pressure_Reading; PS : out Pressure_Setting) is
         diff : Integer;
     begin
-        diff := 100 - Integer(PR);
+        diff := 1000 - Integer(PR);
         if diff > 4 then
-            PS := 9;
+            PS := 4;
         elsif diff <= -4 then
-            PS := 0;
+            PS := -4;
         else
-            PS := Pressure_Setting(diff+4);
+            PS := Pressure_Setting(diff);
         end if;
     end Pressure_Convert;
 end Control_Procedures;

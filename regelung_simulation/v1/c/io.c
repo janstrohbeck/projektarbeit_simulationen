@@ -10,6 +10,30 @@ static struct {
     heater_setting_t setting;
 } temp_state;
 
+static void get_temp(temp_reading_t *TR) {
+    pthread_mutex_lock(&temp_mutex);
+    *TR = temp_state.temp;
+    pthread_mutex_unlock(&temp_mutex);
+}
+
+static void set_temp(temp_reading_t TR) {
+    pthread_mutex_lock(&temp_mutex);
+    temp_state.temp = TR;
+    pthread_mutex_unlock(&temp_mutex);
+}
+
+static void get_heater_setting(heater_setting_t *HS) {
+    pthread_mutex_lock(&temp_mutex);
+    *HS = temp_state.setting;
+    pthread_mutex_unlock(&temp_mutex);
+}
+
+static void set_heater_setting(heater_setting_t HS) {
+    pthread_mutex_lock(&temp_mutex);
+    temp_state.setting = HS;
+    pthread_mutex_unlock(&temp_mutex);
+}
+
 static pthread_mutex_t pressure_mutex;
 static struct {
     pressure_reading_t pressure;
@@ -19,19 +43,22 @@ static struct {
 static void *temp_simulator(void *args) {
     while (1) {
         printf("Temp simulator!\n");
-        pthread_mutex_lock(&temp_mutex);
-        if (temp_state.setting == ON) {
-            temp_state.temp += 1;
-            if (temp_state.temp > MAX_TEMP_READING) {
-                temp_state.temp = MAX_TEMP_READING;
+        temp_reading_t temp;
+        get_temp(&temp);
+        heater_setting_t setting;
+        get_heater_setting(&setting);
+        if (setting == ON) {
+            temp += 1;
+            if (temp > MAX_TEMP_READING) {
+                temp = MAX_TEMP_READING;
             }
         } else {
-            temp_state.temp -= 2;
-            if (temp_state.temp < MIN_TEMP_READING) {
-                temp_state.temp = MIN_TEMP_READING;
+            temp -= 2;
+            if (temp < MIN_TEMP_READING) {
+                temp = MIN_TEMP_READING;
             }
         }
-        pthread_mutex_unlock(&temp_mutex);
+        set_temp(temp);
         delay_ms(250);
     }
 }
