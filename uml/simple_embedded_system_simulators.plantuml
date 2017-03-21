@@ -1,0 +1,54 @@
+@startuml
+
+package "IO" {
+interface IO << global functions >> {
+    +read_temp(TR : out TempReading)
+    +read_pressure(PR : out PressureReading)
+    +write_heater_setting(HS : HeaterSetting)
+    +write_pressure_setting(PS : PressureSetting)
+    +write_temp_reading(TR : TempReading)
+    +write_pressure_reading(PR : PressureReading)
+}
+
+together {
+class TempState << (M,orange) monitor >> {
+    -temp : TempReading
+    -heater_setting : HeaterSetting
+    .. Getters ..
+    +get_temp() : TempReading
+    +get_heater_setting() : HeaterSetting
+    .. Setters ..
+    +set_temp(TR : TempReading)
+    +set_heater_setting(HS : HeaterSetting)
+}
+
+class TempSimulator << (T,#ADD1B2) Thread >> {
+    +run()
+}
+}
+
+together {
+class PressureState << (M,orange) monitor >> {
+    -pressure : PressureReading
+    -setting : PressureSetting
+    .. Getters ..
+    +get_pressure() : PressureReading
+    +get_setting() : PressureSetting
+    .. Setters ..
+    +set_pressure(PR : PressureReading)
+    +set_setting(PS : PressureSetting)
+}
+
+class PressureSimulator << (T,#ADD1B2) Thread >> {
+    +run()
+}
+}
+
+TempSimulator -> TempState
+IO -> TempState
+
+PressureSimulator -> PressureState
+IO -> PressureState
+}
+
+@enduml

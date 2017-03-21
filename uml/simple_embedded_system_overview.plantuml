@@ -1,0 +1,32 @@
+@startuml
+
+left to right direction
+ 
+skinparam usecase {
+    BackgroundColor<< Thread >> #ADD1B2
+}
+
+usecase AD1 as "A/D Converter"
+usecase AD2 as "A/D Converter"
+
+(Temperature Sensor) -> AD1
+(Switch) -> (Heater)
+
+(Pressure Sensor) -> AD2
+(D/A Converter)-> (Valve)
+
+usecase Display as "Display"
+
+rectangle "            Embedded System            " {
+    (TempController) << Thread >>
+    (PressureController) << Thread >>
+
+    AD1 -> (TempController)
+    (TempController) -> (Switch)
+    (TempController) -> (Display)
+    AD2 -> (PressureController)
+    (PressureController) -> (D/A Converter)
+    (PressureController) -> (Display)
+}
+
+@enduml

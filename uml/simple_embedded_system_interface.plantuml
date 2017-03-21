@@ -1,0 +1,53 @@
+@startuml
+
+package "IO" {
+interface IO << global functions >> {
+    +read_temp(TR : out TempReading)
+    +read_pressure(PR : out PressureReading)
+    +write_heater_setting(HS : HeaterSetting)
+    +write_pressure_setting(PS : PressureSetting)
+    +write_temp_reading(TR : TempReading)
+    +write_pressure_reading(PR : PressureReading)
+}
+}
+
+package "Control_Procedures" {
+interface Control_Procedures << global functions >> {
+    +convert_temp(TR : TempReading) : HeaterSetting
+    +convert_pressure(PR : PressureReading) : PressureSetting
+}
+}
+
+package "Data_Types" {
+class TempReading << (C,#ADD1B2) typedef >> {
+}
+class PressureReading << (C,#ADD1B2) typedef >> {
+}
+class HeaterSetting << (C,#ADD1B2) typedef >> {
+}
+class PressureSetting << (C,#ADD1B2) typedef >> {
+}
+}
+
+PressureSetting -[hidden]> IO
+
+package {
+class TempController << (T,#ADD1B2) Thread >> {
+    +run()
+}
+
+class PressureController << (T,#ADD1B2) Thread >> {
+    +run()
+}
+}
+
+TempController -> IO
+TempController -> Control_Procedures
+PressureController -> IO
+PressureController -> Control_Procedures
+Data_Types -[hidden]> IO
+Data_Types -[hidden]> Control_Procedures
+Data_Types -[hidden]> PressureController
+Data_Types -[hidden]> TempController
+
+@enduml

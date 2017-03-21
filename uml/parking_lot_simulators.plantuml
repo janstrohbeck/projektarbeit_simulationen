@@ -1,0 +1,82 @@
+@startuml
+
+package "IO" {
+interface IO << global functions >> {
+    +read_entry_request(ER: out EntryRequest);
+    +read_exit_request(ER: out ExitRequest);
+    +read_entry_sensor_state(ER: out EntrySensorState);
+    +read_exit_sensor_state(ER: out ExitSensorState);
+    +write_signal_state(S: out SignalState);
+    +write_entry_gate_state(E: out EntryGateState);
+    +write_exit_gate_state(E: out ExitGateState);
+}
+
+class SimulatorState << (M,orange) monitor >> {
+    -EntryRequest : EntryRequest
+    -ExitRequest : ExitRequest
+    -EntrySensorState : EntrySensorState
+    -ExitSensorState : ExitSensorState
+    -EntryGateState : EntryGateState
+    -ExitGateState : ExitGateState
+    -SignalState : SignalState
+
+    .. Getters ..
+    +get_entry_request(ER : out EntryRequest)
+    +get_exit_request(ER : out ExitRequest)
+    +get_entry_sensor_state(ER : out EntrySensorState)
+    +get_exit_sensor_state(ER : out ExitSensorState)
+    +get_entry_gate_state(ER : out EntryGateState)
+    +get_exit_gate_state(ER : out ExitGateState)
+    +get_signal_state(S : out SignalState)
+    .. Setters ..
+    +set_entry_request(ER : EntryRequest)
+    +set_exit_request(ER : ExitRequest)
+    +set_entry_sensor_state(ER : EntrySensorState)
+    +set_exit_sensor_state(ER : ExitSensorState)
+    +set_entry_gate_state(ER : EntryGateState)
+    +set_exit_gate_state(ER : ExitGateState)
+    +set_signal_state(S : SignalState)
+}
+
+together {
+class EntryGateSimulator << (T,#ADD1B2) Thread >> {
+    +run()
+}
+
+class ExitGateSimulator << (T,#ADD1B2) Thread >> {
+    +run()
+}
+}
+
+class Car << (T,#ADD1B2) Thread >> {
+    +run()
+}
+
+class RequestQueue {
+    +enqueue(timeout_ms : Integer)
+    +enqueue()
+    +receive()
+}
+
+together {
+class EntryGateRequestQueue {
+}
+
+class ExitGateRequestQueue {
+}
+}
+
+EntryGateRequestQueue <|-- RequestQueue
+ExitGateRequestQueue <|-- RequestQueue
+
+ExitGateSimulator -> ExitGateRequestQueue
+EntryGateSimulator -> EntryGateRequestQueue
+
+IO -> SimulatorState
+ExitGateSimulator -> SimulatorState
+EntryGateSimulator -> SimulatorState
+
+Car -> EntryGateRequestQueue
+Car -> ExitGateRequestQueue
+
+@enduml

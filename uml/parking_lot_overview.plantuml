@@ -1,0 +1,67 @@
+@startuml
+
+left to right direction
+ 
+skinparam usecase {
+    BackgroundColor<< Thread >> #ADD1B2
+    BackgroundColor<< Action >> #FBFB77
+}
+
+usecase AD1 as "A/D Converter"
+usecase AD2 as "A/D Converter"
+usecase AD3 as "A/D Converter"
+usecase AD4 as "A/D Converter"
+usecase DA1 as "D/A Converter"
+usecase DA2 as "D/A Converter"
+usecase DA3 as "D/A Converter"
+
+actor Car as "Car"
+
+rectangle "Entry Gate" {
+    usecase Enqueue1 << Action >> as "Enqueue"
+    usecase Sensor1 as "Button"
+    usecase Sensor2 as "photo sensor"
+    usecase Gate1 as "Gate"
+
+    (Leave queue) << Action >> 
+
+    Car -> (Leave queue)
+    Car -> (Enqueue1)
+
+    (Sensor1) -> AD1
+    (Sensor2) -> AD2
+    (DA2) -> (Gate1)
+}
+
+rectangle "Exit Gate" {
+    usecase Enqueue2 << Action >> as "Enqueue"
+    usecase Sensor3 as "Button"
+    usecase Sensor4 as "photo sensor"
+    usecase Gate2 as "Gate"
+
+    Car -> (Enqueue2)
+
+    (Sensor3) -> AD3
+    (Sensor4) -> AD4
+    (DA3) -> (Gate2)
+}
+
+rectangle " Signal " {
+    (DA1) -> (Light)
+}
+
+rectangle "                      Embedded System                      " {
+    (EntryController) << Thread >>
+    (ExitController) << Thread >>
+    (SignalController) << Thread >>
+
+    (AD1) -> (EntryController)
+    (AD2) -> (EntryController)
+    (AD3) -> (ExitController)
+    (AD4) -> (ExitController)
+    (SignalController) -> (DA1)
+    (EntryController) -> (DA2)
+    (ExitController) -> (DA3)
+}
+
+@enduml

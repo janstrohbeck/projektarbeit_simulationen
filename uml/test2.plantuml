@@ -1,0 +1,33 @@
+@startuml
+
+actor Car
+entity CallQueue
+entity EntryGate
+
+EntryGate --> CallQueue : Receive
+hnote over EntryGate : Blocked
+
+Car --> CallQueue : Call
+hnote over Car : Blocked
+
+CallQueue --> CallQueue : Add thread to queue
+activate CallQueue
+deactivate CallQueue
+
+...
+
+hnote over EntryGate : Resumed
+CallQueue --> EntryGate : Receive returns
+hnote over Car : Resumed
+activate EntryGate
+CallQueue --> Car : Call returns
+
+hnote over Car : Blocked
+
+...
+
+EntryGate --> Car : Signal completion
+deactivate EntryGate
+hnote over Car : Resumed
+
+@enduml

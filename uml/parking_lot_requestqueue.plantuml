@@ -1,0 +1,36 @@
+@startuml
+
+hide footbox
+
+actor Car
+entity EntryGateRequestQueue
+entity EntryGateSimulator
+
+EntryGateSimulator --> EntryGateRequestQueue : Receive
+hnote over EntryGateSimulator : Blocked
+
+Car --> EntryGateRequestQueue : Enqueue
+
+EntryGateRequestQueue --> EntryGateRequestQueue : Add thread to queue
+activate EntryGateRequestQueue
+deactivate EntryGateRequestQueue
+
+hnote over Car : Blocked
+
+hnote over EntryGateSimulator : Resumed
+EntryGateRequestQueue --> EntryGateRequestQueue : Remove thread from queue
+activate EntryGateRequestQueue
+deactivate EntryGateRequestQueue
+EntryGateRequestQueue --> EntryGateSimulator : Receive returns
+
+hnote over Car : Resumed
+activate EntryGateSimulator
+EntryGateRequestQueue --> Car : Enqueue returns
+
+hnote over Car : Blocked
+
+EntryGateSimulator --> Car : Signal completion
+deactivate EntryGateSimulator
+hnote over Car : Resumed
+
+@enduml

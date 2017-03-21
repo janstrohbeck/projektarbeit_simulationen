@@ -1,0 +1,64 @@
+@startuml
+
+package "IO" {
+interface IO << global functions >> {
+    +read_entry_request(ER: out EntryRequest);
+    +read_exit_request(ER: out ExitRequest);
+    +read_entry_sensor_state(ER: out EntrySensorState);
+    +read_exit_sensor_state(ER: out ExitSensorState);
+    +write_signal_state(S: out SignalState);
+    +write_entry_gate_state(E: out EntryGateState);
+    +write_exit_gate_state(E: out ExitGateState);
+}
+}
+
+package "DataTypes" {
+enum EntryRequest {
+    FALSE,
+    TRUE
+}
+enum ExitRequest {
+    FALSE,
+    TRUE
+}
+enum EntrySensorState {
+    BLOCKED,
+    FREE
+}
+enum ExitSensorState {
+    BLOCKED,
+    FREE
+}
+enum SignalState {
+    FREE,
+    FULL
+}
+enum EntryGateState {
+    OPEN,
+    CLOSED
+}
+enum ExitGateState {
+    OPEN,
+    CLOSED
+}
+}
+
+package {
+class EntryController << (T,#ADD1B2) Thread >> {
+    +run()
+}
+
+class ExitController << (T,#ADD1B2) Thread >> {
+    +run()
+}
+
+class SignalController << (T,#ADD1B2) Thread >> {
+    +run()
+}
+}
+
+EntryController -> IO
+ExitController -> IO
+SignalController -> IO
+
+@enduml
