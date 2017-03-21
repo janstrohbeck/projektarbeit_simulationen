@@ -30,12 +30,12 @@ An overview of this system can be seen in the following diagram:
 
 .. image:: ../../uml/build/parking_lot_overview.*
 
-The simulation creates a given number of cars as seperate threads, which can
+The simulation creates a given number of cars as separate threads, which can
 randomly enqueue themselves at the entry gate or exit gate (only if they have
 entered successfully previously). They are also going to give up and leave the
 queue if they have not been let in after 30 seconds.
 
-The main program is probably also going to be divided into three seperate threads or
+The main program is probably also going to be divided into three separate threads or
 tasks: One handling requests at each gate (EntryController, ExitController) and
 one setting the signal state (SignalController).
 
@@ -321,7 +321,7 @@ Implementation details
 ----------------------
 
 The core of the simulation takes part inside the IO package. Each car is
-simulated by a seperate thread. Also, two threads simulate the gates
+simulated by a separate thread. Also, two threads simulate the gates
 (``EntryGateSimulator``, ``ExitGateSimulator``). Two queues are used to track
 which cars are currently in the queues.
 
