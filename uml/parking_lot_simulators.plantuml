@@ -4,8 +4,8 @@ package "IO" {
 interface IO << global functions >> {
     +read_entry_request(ER: out EntryRequest);
     +read_exit_request(ER: out ExitRequest);
-    +read_entry_sensor_state(ER: out EntrySensorState);
-    +read_exit_sensor_state(ER: out ExitSensorState);
+    +read_entry_sensor_state(ESS: out EntrySensorState);
+    +read_exit_sensor_state(ESS: out ExitSensorState);
     +write_signal_state(S: out SignalState);
     +write_entry_gate_state(E: out EntryGateState);
     +write_exit_gate_state(E: out ExitGateState);

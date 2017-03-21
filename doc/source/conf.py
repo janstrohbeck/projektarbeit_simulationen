@@ -45,7 +45,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Ada Aufgaben'
+project = u'Ada Exercises'
 copyright = u'2017, Jan Strohbeck'
 author = u'Jan Strohbeck'
 
@@ -63,7 +63,7 @@ release = u'0.1'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'de'
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -99,7 +99,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'AdaAufgabendoc'
+htmlhelp_basename = 'AdaExercisesdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -120,13 +120,22 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+    'classoptions': ',openany,oneside',
+    'babel': '\\usepackage[english]{babel}',
+    #'preamble': '\\hyphenation{Entry-Gate-State Exit-Gate-State}\\DeclareFontFamily{\\encodingdefault}{\\ttdefault}{\\hyphenchar\\font=`\\-}'
+    'preamble': r"""
+        \hyphenation{Entry-Gate-State Exit-Gate-State Parking-Spots
+        Entry-Request Entry-Sensor-State Exit-Sensor-State}
+        \let\oldsphinxcode\sphinxcode
+        \renewcommand{\sphinxcode}[1]{\oldsphinxcode{\hyphenchar\font=45{}#1}}
+        """
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'AdaAufgaben.tex', u'Ada Aufgaben Documentation',
+    (master_doc, 'AdaExercises.tex', u'Ada Exercises Documentation',
      u'Jan Strohbeck', 'manual'),
 ]
 
@@ -136,7 +145,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'adaaufgaben', u'Ada Aufgaben Documentation',
+    (master_doc, 'adaexercises', u'Ada Exercises Documentation',
      [author], 1)
 ]
 
@@ -147,10 +156,10 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'AdaAufgaben', u'Ada Aufgaben Documentation',
-     author, 'AdaAufgaben', 'One line description of project.',
+    (master_doc, 'AdaExercises', u'Ada Exercises Documentation',
+     author, 'AdaExercises', 'One line description of project.',
      'Miscellaneous'),
 ]
 
 
-
+numfig = True
