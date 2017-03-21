@@ -12,13 +12,12 @@ package body Control_Procedures is
         diff : Integer;
     begin
         diff := 1000 - Integer(PR);
-        if diff > 4 then
-            PS := 4;
-        elsif diff <= -4 then
-            PS := -4;
+        if diff > Integer(Pressure_Setting'Last) then
+            PS := Pressure_Setting'Last;
+        elsif diff <= Integer(Pressure_Setting'First) then
+            PS := Pressure_Setting'First;
         else
             PS := Pressure_Setting(diff);
         end if;
     end Pressure_Convert;
 end Control_Procedures;
-

@@ -3,6 +3,9 @@
 
 #include "data_types.h"
 
+#define ENABLE_LOGGER 1
+#define ENABLE_CONSOLE 0
+
 void init_simulator();
 void delay_ms(int ms);
 void read_temp(temp_reading_t *TR);
