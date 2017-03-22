@@ -1,5 +1,6 @@
 #include "call_queue.h"
 #include <stdlib.h>
+#include <malloc.h>
 
 void call_queue_init(call_queue_t * const queue) {
     queue->first = NULL;
@@ -16,6 +17,9 @@ sem_t *call_queue_receive(call_queue_t * const queue) {
     call_queue_entry_t *entry = queue->first;
     entry->received = 1;
     queue->first = entry->next;
+    if (entry == queue->last) {
+        queue->last = NULL;
+    }
 
     sem_t *cond_complete = entry->cond_complete;
 
@@ -39,51 +43,53 @@ static struct timespec timeInTheFuture(int ms) {
 
 int call_queue_trycall(call_queue_t * const queue, sem_t * const cond_complete, const int timeout_ms) {
     struct timespec timeout = timeInTheFuture(timeout_ms);
-    call_queue_entry_t entry;
+    call_queue_entry_t *entry = (call_queue_entry_t *)malloc(sizeof(call_queue_entry_t));
 
-    pthread_cond_init(&entry.cond_rendezvous, NULL);
-    entry.cond_complete = cond_complete;
-    entry.prev = NULL;
-    entry.next = NULL;
-    entry.received = 0;
+    pthread_cond_init(&entry->cond_rendezvous, NULL);
+    entry->cond_complete = cond_complete;
+    entry->prev = NULL;
+    entry->next = NULL;
+    entry->received = 0;
 
     pthread_mutex_lock(&queue->mutex);
 
     if (queue->last != NULL) {
-        entry.prev = queue->last->prev;
-        queue->last->next = &entry;
+        entry->prev = queue->last->prev;
+        queue->last->next = entry;
     }
-    queue->last = &entry;
+    queue->last = entry;
 
     if (queue -> first == NULL) {
-        queue->first = &entry;
+        queue->first = entry;
     }
 
     int res = 0;
     pthread_cond_signal(&queue->cond_not_empty);
     if (timeout_ms < 0) {
-        while (!entry.received) pthread_cond_wait(&entry.cond_rendezvous, &queue->mutex);
+        while (!entry->received) pthread_cond_wait(&entry->cond_rendezvous, &queue->mutex);
     }
     else {
-        res = pthread_cond_timedwait(&entry.cond_rendezvous, &queue->mutex, &timeout);
+        res = pthread_cond_timedwait(&entry->cond_rendezvous, &queue->mutex, &timeout);
 
-        if (res != 0 && !entry.received) {
+        if (res != 0 && !entry->received) {
             // remove entry from queue
-            if (entry.prev != NULL && entry.next != NULL) {
-                entry.prev->next = entry.next;
-                entry.next->prev = entry.prev;
-            } else if (entry.prev != NULL) {
-                entry.prev->next = NULL;
-                queue->last = entry.prev;
-            } else if (entry.next != NULL) {
-                entry.next->prev = NULL;
-                queue->first = entry.next;
+            if (entry->prev != NULL && entry->next != NULL) {
+                entry->prev->next = entry->next;
+                entry->next->prev = entry->prev;
+            } else if (entry->prev != NULL) {
+                entry->prev->next = NULL;
+                queue->last = entry->prev;
+            } else if (entry->next != NULL) {
+                entry->next->prev = NULL;
+                queue->first = entry->next;
             } else {
                 queue->first = NULL;
                 queue->last = NULL;
             }
         }
     }
+
+    free(entry);
 
     pthread_mutex_unlock(&queue->mutex);
 

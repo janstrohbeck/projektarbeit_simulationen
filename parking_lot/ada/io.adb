@@ -87,8 +87,22 @@ package body IO is
         function GetSignalState return SignalState is (signal_state);
 
         -- Setters
-        procedure SetEntryGateState(E : EntryGateState) is begin entry_gate_state := E; end SetEntryGateState;
-        procedure SetExitGateState(E : ExitGateState) is begin exit_gate_state := E; end SetExitGateState;
+        procedure SetEntryGateState(E : EntryGateState) is
+        begin
+            entry_gate_state := E;
+            if E = Open and entry_request = True then
+                entry_sensor_state := Blocked;
+            end if;
+        end SetEntryGateState;
+
+        procedure SetExitGateState(E : ExitGateState) is
+        begin
+            exit_gate_state := E;
+            if E = Open and exit_request = True then
+                exit_sensor_state := Blocked;
+            end if;
+        end SetExitGateState;
+
         procedure SetSignalState(S : SignalState) is begin signal_state := S; end SetSignalState;
         procedure SetEntryRequest(ER : EntryRequest) is begin entry_request := ER; end SetEntryRequest;
         procedure SetExitRequest(ER : ExitRequest) is begin exit_request := ER; end SetExitRequest;
@@ -168,7 +182,7 @@ package body IO is
                 prevEntryQueueCnt := tmpEntryQueueCnt;
                 prevExitQueueCnt := tmpExitQueueCnt;
             end if;
-            delay 0.1;
+          --delay 0.1;
         end loop;
     end Logger;
 
@@ -183,6 +197,7 @@ package body IO is
             end enter;
             Put_Line("EntryGate: Gate open!");
             SimulatorState.SetEntryRequest(False);
+            SimulatorState.IncCarCnt;
 
             Put_Line("EntryGate: Waiting for car to drive through...");
             accept entered do
@@ -191,7 +206,6 @@ package body IO is
 
             Put_Line("EntryGate: Car is through!");
             SimulatorState.SetEntrySensorState(Free);
-            SimulatorState.IncCarCnt;
             Put_Line("EntryGate: Waiting for gate to close...");
             SimulatorState.WaitForEntryGateClosed;
             Put_Line("EntryGate: Gate closed!");
@@ -209,6 +223,7 @@ package body IO is
             end leave;
             Put_Line("ExitGate: Gate open!");
             SimulatorState.SetExitRequest(False);
+            SimulatorState.DecCarCnt;
 
             Put_Line("ExitGate: Waiting for car to drive through...");
             accept left do
@@ -217,7 +232,6 @@ package body IO is
 
             Put_Line("ExitGate: Car is through!");
             SimulatorState.SetExitSensorState(Free);
-            SimulatorState.DecCarCnt;
             Put_Line("ExitGate: Waiting for gate to close...");
             SimulatorState.WaitForExitGateClosed;
             Put_Line("ExitGate: Gate closed!");
@@ -244,7 +258,7 @@ package body IO is
                 SimulatorState.DecEntryQueueCnt;
                 if success then
                     Put_Line("Car" & Integer'Image(id) & ": driving through gate!");
-                    delay 2.0;
+                  --delay 2.0;
                     Put_Line("Car" & Integer'Image(id) & ": went through gate.");
                     EntryGateSimulator.entered;
                     Put_Line("Car" & Integer'Image(id) & ": now parked.");
@@ -256,15 +270,15 @@ package body IO is
                 Put_Line("Car" & Integer'Image(id) & ": wanting to leave.");
                 SimulatorState.IncExitQueueCnt;
                 ExitGateSimulator.leave;
+                SimulatorState.DecExitQueueCnt;
                 Put_Line("Car" & Integer'Image(id) & ": driving through gate!");
-                delay 2.0;
+              --delay 2.0;
                 Put_Line("Car" & Integer'Image(id) & ": went through gate.");
                 ExitGateSimulator.left;
-                SimulatorState.DecExitQueueCnt;
                 Put_Line("Car" & Integer'Image(id) & ": now outside.");
                 state := Driving;
             end if;
-            delay 1.0;
+          --delay 1.0;
         end loop;
     end Car;
 
@@ -291,17 +305,11 @@ package body IO is
     procedure Write(E: EntryGateState) is
     begin
         SimulatorState.SetEntryGateState(E);
-        if E = Open and SimulatorState.GetEntryRequest = True then
-            SimulatorState.SetEntrySensorState(Blocked);
-        end if;
     end Write;
 
     procedure Write(E: ExitGateState) is
     begin
         SimulatorState.SetExitGateState(E);
-        if E = Open and SimulatorState.GetExitRequest = True then
-            SimulatorState.SetExitSensorState(Blocked);
-        end if;
     end Write;
 
     procedure Write(S: SignalState) is

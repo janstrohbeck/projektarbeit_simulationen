@@ -7,7 +7,19 @@ procedure Main is
     exit_request : ExitRequest := False;
     entry_sensor_state : EntrySensorState := Free;
     exit_sensor_state : ExitSensorState := Free;
-    taken_parking_spots : ParkingSpots := 0;
+
+    protected Wrapper is
+        procedure IncSpots;
+        procedure DecSpots;
+        function Spots return ParkingSpots;
+    private
+        taken_spots : ParkingSpots := 0;
+    end Wrapper;
+    protected body Wrapper is
+        procedure IncSpots is begin taken_spots := taken_spots + 1; end IncSpots;
+        procedure DecSpots is begin taken_spots := taken_spots - 1; end DecSpots;
+        function Spots return ParkingSpots is (taken_spots);
+    end Wrapper;
 
     task EntryController;
     task body EntryController is
@@ -15,8 +27,8 @@ procedure Main is
         loop
             Read(entry_request);
             if entry_request = True then -- Wenn Anfrage EntryGateState
-                if taken_parking_spots < ParkingSpots'Last then -- Wenn Parkplatz nicht voll
-                    taken_parking_spots := taken_parking_spots + 1;
+                if Wrapper.Spots < ParkingSpots'Last then -- Wenn Parkplatz nicht voll
+                    Wrapper.IncSpots;
                     Write(EntryGateState'(Open)); -- EntryGateState öffnen
                     entry_sensor_state := Blocked; -- Durchfahrt beginnt
                     while (entry_sensor_state = Blocked) loop Read(entry_sensor_state); delay 0.1; end loop; -- Durchfahren lassen
@@ -33,7 +45,7 @@ procedure Main is
         loop
             Read(exit_request);
             if exit_request = True then -- Wenn Anfrage ExitGateState
-                taken_parking_spots := taken_parking_spots - 1;
+                Wrapper.DecSpots;
                 Write(ExitGateState'(Open)); -- ExitGateState öffnen
                 exit_sensor_state := Blocked; -- Durchfahrt beginnt
                 while (exit_sensor_state = Blocked) loop Read(exit_sensor_state); delay 0.1; end loop; -- Durchfahren lassen
@@ -47,7 +59,7 @@ procedure Main is
     task body Signal is
     begin
         loop
-            if taken_parking_spots < ParkingSpots'Last then
+            if Wrapper.Spots < ParkingSpots'Last then
                 Write(Free);
             else
                 Write(Full);

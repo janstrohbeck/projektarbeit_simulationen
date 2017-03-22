@@ -93,6 +93,14 @@ static gate_state_t simulator_state_get_entry_gate_state() {
 static void simulator_state_set_entry_gate_state(gate_state_t E) {
     pthread_mutex_lock(&mutex);
     simulator_state.entry_gate_state = E;
+    if (E == GATE_OPEN) {
+        if (simulator_state.entry_request) {
+            simulator_state.entry_sensor_state = SENSOR_BLOCKED;
+        }
+        pthread_cond_signal(&cond_entry_gate_open);
+    } else {
+        pthread_cond_signal(&cond_entry_gate_closed);
+    }
     pthread_mutex_unlock(&mutex);
 }
 
@@ -107,6 +115,14 @@ static gate_state_t simulator_state_get_exit_gate_state() {
 static void simulator_state_set_exit_gate_state(gate_state_t E) {
     pthread_mutex_lock(&mutex);
     simulator_state.exit_gate_state = E;
+    if (E == GATE_OPEN) {
+        if (simulator_state.exit_request) {
+            simulator_state.exit_sensor_state = SENSOR_BLOCKED;
+        }
+        pthread_cond_signal(&cond_exit_gate_open);
+    } else {
+        pthread_cond_signal(&cond_exit_gate_closed);
+    }
     pthread_mutex_unlock(&mutex);
 }
 
@@ -238,7 +254,7 @@ static void simulator_state_wait_exit_gate_closed() {
 
 static void *logger(void *args) {
     bool start = true;
-
+    
     signal_state_t prev_signal_state = SIGNAL_FREE;
     int prev_car_cnt = 0;
     int prev_entry_queue_cnt = 0;
@@ -260,7 +276,7 @@ static void *logger(void *args) {
                 tmp_car_cnt != prev_car_cnt ||
                 tmp_entry_queue_cnt != prev_entry_queue_cnt ||
                 tmp_exit_queue_cnt != prev_exit_queue_cnt) {
-            printf("Cars inside: %d | Signal: %s | Cars wanting to enter: %d | Cars wanting to leave: %d\n",
+            sync_printf("Cars inside: %d | Signal: %s | Cars wanting to enter: %d | Cars wanting to leave: %d\n",
                     tmp_car_cnt, tmp_signal_state == SIGNAL_FREE ? "Free" : "Full",
                     tmp_entry_queue_cnt, tmp_exit_queue_cnt);
             start = false;
@@ -280,30 +296,30 @@ static sem_t entry_gate_sem_entered;
 static void *entry_gate_simulator(void *args) {
     while (1) {
         sem_t *sem_complete = call_queue_receive(&entry_gate_request_queue);
-        printf("EntryGate: A car wants to enter!\n");
+        sync_printf("EntryGate: A car wants to enter!\n");
         
         simulator_state_set_entry_request(true);
 
-        printf("EntryGate: Waiting for gate to open...\n");
+        sync_printf("EntryGate: Waiting for gate to open...\n");
         simulator_state_wait_entry_gate_open();
 
-        printf("EntryGate: Gate open!\n");
+        sync_printf("EntryGate: Gate open!\n");
         simulator_state_set_entry_request(false);
+        simulator_state_inc_car_cnt();
 
         // Notify car that gate has opened
         sem_post(sem_complete);
 
-        printf("EntryGate: Waiting for car to drive through...\n");
+        sync_printf("EntryGate: Waiting for car to drive through...\n");
         sem_wait(&entry_gate_sem_entered);
 
-        printf("EntryGate: Car is through!\n");
+        sync_printf("EntryGate: Car is through!\n");
         simulator_state_set_entry_sensor_state(false);
-        //simulator_state_inc_car_cnt();
 
-        printf("EntryGate: Waiting for gate to close...\n");
+        sync_printf("EntryGate: Waiting for gate to close...\n");
         simulator_state_wait_entry_gate_closed();
 
-        printf("EntryGate: Gate closed!\n");
+        sync_printf("EntryGate: Gate closed!\n");
     }
     return NULL;
 }
@@ -314,30 +330,30 @@ static sem_t exit_gate_sem_left;
 static void *exit_gate_simulator(void *args) {
     while (1) {
         sem_t *sem_complete = call_queue_receive(&exit_gate_request_queue);
-        printf("ExitGate: A car wants to leave!\n");
+        sync_printf("ExitGate: A car wants to leave!\n");
         
         simulator_state_set_exit_request(true);
 
-        printf("ExitGate: Waiting for gate to open...\n");
+        sync_printf("ExitGate: Waiting for gate to open...\n");
         simulator_state_wait_exit_gate_open();
 
-        printf("ExitGate: Gate open!\n");
+        sync_printf("ExitGate: Gate open!\n");
         simulator_state_set_exit_request(false);
+        simulator_state_dec_car_cnt();
 
         // Notify car that gate has opened
         sem_post(sem_complete);
 
-        printf("ExitGate: Waiting for car to drive through...\n");
+        sync_printf("ExitGate: Waiting for car to drive through...\n");
         sem_wait(&exit_gate_sem_left);
 
-        printf("ExitGate: Car is through!\n");
+        sync_printf("ExitGate: Car is through!\n");
         simulator_state_set_exit_sensor_state(false);
-        //simulator_state_dec_car_cnt();
 
-        printf("ExitGate: Waiting for gate to close...\n");
+        sync_printf("ExitGate: Waiting for gate to close...\n");
         simulator_state_wait_exit_gate_closed();
 
-        printf("ExitGate: Gate closed!\n");
+        sync_printf("ExitGate: Gate closed!\n");
     }
     return NULL;
 }
@@ -352,32 +368,32 @@ static void *car(void *args) {
 
     while (1) {
         if (state == DRIVING && gen_random(0, 99) < 10) {
-            printf("Car %d: wanting to enter.\n", id);
-            //simulator_state_inc_entry_queue_cnt();
+            sync_printf("Car %d: wanting to enter.\n", id);
+            simulator_state_inc_entry_queue_cnt();
             int ret = call_queue_trycall(&entry_gate_request_queue, &enter_complete, 30000);
-            //simulator_state_dec_entry_queue_cnt();
+            simulator_state_dec_entry_queue_cnt();
             if (ret) {
-                printf("Car %d: giving up.\n", id);
+                sync_printf("Car %d: giving up.\n", id);
             } else {
                 sem_wait(&enter_complete);
-                printf("Car %d: driving through gate!.\n", id);
+                sync_printf("Car %d: driving through gate!.\n", id);
                 delay_ms(2000);
-                printf("Car %d: went through gate!.\n", id);
+                sync_printf("Car %d: went through gate!.\n", id);
                 sem_post(&entry_gate_sem_entered);
-                printf("Car %d: now parked.\n", id);
+                sync_printf("Car %d: now parked.\n", id);
                 state = PARKED;
             }
         } else if (state == PARKED && gen_random(0, 99) < 3) {
-            printf("Car %d: wanting to leave.\n", id);
-            //simulator_state_inc_exit_queue_cnt();
+            sync_printf("Car %d: wanting to leave.\n", id);
+            simulator_state_inc_exit_queue_cnt();
             call_queue_call(&exit_gate_request_queue, &leave_complete);
-            //simulator_state_dec_exit_queue_cnt();
+            simulator_state_dec_exit_queue_cnt();
             sem_wait(&leave_complete);
-            printf("Car %d: driving through gate!.\n", id);
+            sync_printf("Car %d: driving through gate!.\n", id);
             delay_ms(2000);
-            printf("Car %d: went through gate!.\n", id);
+            sync_printf("Car %d: went through gate!.\n", id);
             sem_post(&exit_gate_sem_left);
-            printf("Car %d: now outside.\n", id);
+            sync_printf("Car %d: now outside.\n", id);
             state = DRIVING;
         }
         delay_ms(1000);
@@ -423,16 +439,15 @@ void init_simulator() {
     pthread_t exit_gate_simulator_thread;
     if (pthread_create(&exit_gate_simulator_thread, NULL, exit_gate_simulator, NULL) != 0) exit(EXIT_FAILURE);
 
+    pthread_t car_threads[NUM_CARS];
     int i;
     for (i = 0; i < NUM_CARS; i++) {
         thread_args[i] = i;
-        pthread_t car_thread;
-        if (pthread_create(&car_thread, NULL, car, &thread_args[i]) != 0) exit(EXIT_FAILURE);
+        if (pthread_create(&car_threads[i], NULL, car, &thread_args[i]) != 0) exit(EXIT_FAILURE);
     }
 }
 
 void delay_ms(int ms) {
-    return;
     nanosleep((const struct timespec[]){{ms / 1000, (ms % 1000)*1000000L}}, NULL);
 }
 
@@ -453,31 +468,11 @@ void read_exit_sensor_state(bool *ESS) {
 }
 
 void write_entry_gate_state(gate_state_t E) {
-    pthread_mutex_lock(&mutex);
-    simulator_state.entry_gate_state = E;
-    if (E == GATE_OPEN) {
-        if (simulator_state.entry_request) {
-            simulator_state.entry_sensor_state = SENSOR_BLOCKED;
-        }
-        pthread_cond_signal(&cond_entry_gate_open);
-    } else {
-        pthread_cond_signal(&cond_entry_gate_closed);
-    }
-    pthread_mutex_unlock(&mutex);
+    simulator_state_set_entry_gate_state(E);
 }
 
 void write_exit_gate_state(gate_state_t E) {
-    pthread_mutex_lock(&mutex);
-    simulator_state.exit_gate_state = E;
-    if (E == GATE_OPEN) {
-        if (simulator_state.exit_request) {
-            simulator_state.exit_sensor_state = SENSOR_BLOCKED;
-        }
-        pthread_cond_signal(&cond_exit_gate_open);
-    } else {
-        pthread_cond_signal(&cond_exit_gate_closed);
-    }
-    pthread_mutex_unlock(&mutex);
+    simulator_state_set_exit_gate_state(E);
 }
 
 void write_signal_state(signal_state_t S) {
