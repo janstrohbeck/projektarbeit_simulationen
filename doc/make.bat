@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=source
 set BUILDDIR=build
-set SPHINXPROJ=AdaAufgaben
+set SPHINXPROJ=AdaExercises
 
 if "%1" == "" goto help
 

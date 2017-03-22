@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build2
-SPHINXPROJ    = AdaAufgaben
+SPHINXPROJ    = AdaExercises
 SOURCEDIR     = source
 BUILDDIR      = build
 
