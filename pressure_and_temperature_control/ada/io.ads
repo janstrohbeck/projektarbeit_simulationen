@@ -8,4 +8,7 @@ package IO is
     procedure Write(PS : Pressure_Setting); -- to DAC
     procedure Write(TR : Temp_Reading); -- to console
     procedure Write(PR : Pressure_Reading); -- to console
+private
+    DISPLAY_LOGGER : constant Boolean := True;
+    DISPLAY_CONSOLE : constant Boolean := True;
 end IO;

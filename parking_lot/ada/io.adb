@@ -161,80 +161,94 @@ package body IO is
         tmpEntryQueueCnt : Natural;
         tmpExitQueueCnt : Natural;
     begin
-        loop
-            tmpSignalState := SimulatorState.GetSignalState;
-            tmpCarCnt := SimulatorState.GetCarCnt;
-            tmpEntryQueueCnt := SimulatorState.GetEntryQueueCnt;
-            tmpExitQueueCnt := SimulatorState.GetExitQueueCnt;
+        if DISPLAY_LOGGER then
+            loop
+                tmpSignalState := SimulatorState.GetSignalState;
+                tmpCarCnt := SimulatorState.GetCarCnt;
+                tmpEntryQueueCnt := SimulatorState.GetEntryQueueCnt;
+                tmpExitQueueCnt := SimulatorState.GetExitQueueCnt;
 
-            if start or else (
-                    tmpSignalState /= prevSignalState or 
-                    tmpCarCnt /= prevCarCnt or 
-                    tmpEntryQueueCnt /= prevEntryQueueCnt or 
-                    tmpExitQueueCnt /= prevExitQueueCnt) then
-                Put_Line("Cars inside:" & Natural'Image(tmpCarCnt)
-                        & " | Signal: " & SignalState'Image(tmpSignalState)
-                        & " | Cars waiting to enter: " & Natural'Image(tmpEntryQueueCnt)
-                        & " | Cars waiting to leave: " & Natural'Image(tmpExitQueueCnt));
-                start := False;
-                prevSignalState := tmpSignalState;
-                prevCarCnt := tmpCarCnt;
-                prevEntryQueueCnt := tmpEntryQueueCnt;
-                prevExitQueueCnt := tmpExitQueueCnt;
-            end if;
-          --delay 0.1;
-        end loop;
+                if start or else (
+                        tmpSignalState /= prevSignalState or 
+                        tmpCarCnt /= prevCarCnt or 
+                        tmpEntryQueueCnt /= prevEntryQueueCnt or 
+                        tmpExitQueueCnt /= prevExitQueueCnt) then
+                    Put_Line("Cars inside:" & Natural'Image(tmpCarCnt)
+                            & " | Signal: " & SignalState'Image(tmpSignalState)
+                            & " | Cars waiting to enter: " & Natural'Image(tmpEntryQueueCnt)
+                            & " | Cars waiting to leave: " & Natural'Image(tmpExitQueueCnt));
+                    start := False;
+                    prevSignalState := tmpSignalState;
+                    prevCarCnt := tmpCarCnt;
+                    prevEntryQueueCnt := tmpEntryQueueCnt;
+                    prevExitQueueCnt := tmpExitQueueCnt;
+                end if;
+                delay 0.1;
+            end loop;
+        end if;
     end Logger;
 
     task body EntryGateSimulator is
+        procedure Log(message: String) is
+        begin
+            if DISPLAY_GATE_STATE then
+                Put_Line("EntryGate: " & message);
+            end if;
+        end Log;
     begin
         loop
             accept enter do
-                Put_Line("EntryGate: A car wants to enter!");
+                Log("A car wants to enter!");
                 SimulatorState.SetEntryRequest(True);
-                Put_Line("EntryGate: Waiting for gate to open...");
+                Log("Waiting for gate to open...");
                 SimulatorState.WaitForEntryGateOpen;
             end enter;
-            Put_Line("EntryGate: Gate open!");
+            Log("Gate open!");
             SimulatorState.SetEntryRequest(False);
             SimulatorState.IncCarCnt;
 
-            Put_Line("EntryGate: Waiting for car to drive through...");
+            Log("Waiting for car to drive through...");
             accept entered do
                 null;
             end entered;
 
-            Put_Line("EntryGate: Car is through!");
+            Log("Car is through!");
             SimulatorState.SetEntrySensorState(Free);
-            Put_Line("EntryGate: Waiting for gate to close...");
+            Log("Waiting for gate to close...");
             SimulatorState.WaitForEntryGateClosed;
-            Put_Line("EntryGate: Gate closed!");
+            Log("Gate closed!");
         end loop;
     end EntryGateSimulator;
 
     task body ExitGateSimulator is
+        procedure Log(message: String) is
+        begin
+            if DISPLAY_GATE_STATE then
+                Put_Line("ExitGate: " & message);
+            end if;
+        end Log;
     begin
         loop
             accept leave do
-                Put_Line("ExitGate: A car wants to leave!");
+                Log("A car wants to leave!");
                 SimulatorState.SetExitRequest(True);
-                Put_Line("ExitGate: Waiting for gate to open...");
+                Log("Waiting for gate to open...");
                 SimulatorState.WaitForExitGateOpen;
             end leave;
-            Put_Line("ExitGate: Gate open!");
+            Log("Gate open!");
             SimulatorState.SetExitRequest(False);
             SimulatorState.DecCarCnt;
 
-            Put_Line("ExitGate: Waiting for car to drive through...");
+            Log("Waiting for car to drive through...");
             accept left do
                 null;
             end left;
 
-            Put_Line("ExitGate: Car is through!");
+            Log("Car is through!");
             SimulatorState.SetExitSensorState(Free);
-            Put_Line("ExitGate: Waiting for gate to close...");
+            Log("Waiting for gate to close...");
             SimulatorState.WaitForExitGateClosed;
-            Put_Line("ExitGate: Gate closed!");
+            Log("Gate closed!");
         end loop;
     end ExitGateSimulator;
 
@@ -243,10 +257,17 @@ package body IO is
     task body Car is
         state : Car_State := Driving;
         success : Boolean;
+
+        procedure Log(message: String) is
+        begin
+            if DISPLAY_CAR_STATE then
+                Put_Line("Car" & Integer'Image(id) & ": " & message);
+            end if;
+        end Log;
     begin
         loop
             if state = Driving and SimulatorState.GetRandom < 10 then
-                Put_Line("Car" & Integer'Image(id) & ": wanting to enter.");
+                Log("wanting to enter.");
                 SimulatorState.IncEntryQueueCnt;
                 success := False;
                 select 
@@ -257,28 +278,28 @@ package body IO is
                 end select;
                 SimulatorState.DecEntryQueueCnt;
                 if success then
-                    Put_Line("Car" & Integer'Image(id) & ": driving through gate!");
-                  --delay 2.0;
-                    Put_Line("Car" & Integer'Image(id) & ": went through gate.");
+                    Log("driving through gate!");
+                    delay 2.0;
+                    Log("went through gate.");
                     EntryGateSimulator.entered;
-                    Put_Line("Car" & Integer'Image(id) & ": now parked.");
+                    Log("now parked.");
                     state := Parked;
                 else
-                    Put_Line("Car" & Integer'Image(id) & ": giving up.");
+                    Log("giving up.");
                 end if;
             elsif state = Parked and SimulatorState.GetRandom < 3 then
-                Put_Line("Car" & Integer'Image(id) & ": wanting to leave.");
+                Log("wanting to leave.");
                 SimulatorState.IncExitQueueCnt;
                 ExitGateSimulator.leave;
                 SimulatorState.DecExitQueueCnt;
-                Put_Line("Car" & Integer'Image(id) & ": driving through gate!");
-              --delay 2.0;
-                Put_Line("Car" & Integer'Image(id) & ": went through gate.");
+                Log("driving through gate!");
+                delay 2.0;
+                Log("went through gate.");
                 ExitGateSimulator.left;
-                Put_Line("Car" & Integer'Image(id) & ": now outside.");
+                Log("now outside.");
                 state := Driving;
             end if;
-          --delay 1.0;
+            delay 1.0;
         end loop;
     end Car;
 

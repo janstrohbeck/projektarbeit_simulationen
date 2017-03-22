@@ -7,4 +7,8 @@ package IO is
     procedure Write(E: EntryGateState);
     procedure Write(E: ExitGateState);
     procedure Write(S: SignalState);
+private
+    DISPLAY_LOGGER : constant Boolean := True;
+    DISPLAY_GATE_STATE : constant Boolean := False;
+    DISPLAY_CAR_STATE : constant Boolean := False;
 end IO;

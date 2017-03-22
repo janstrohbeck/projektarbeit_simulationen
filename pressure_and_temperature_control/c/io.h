@@ -3,8 +3,8 @@
 
 #include "data_types.h"
 
-#define ENABLE_LOGGER 1
-#define ENABLE_CONSOLE 0
+#define DISPLAY_LOGGER 1
+#define DISPLAY_CONSOLE 1
 
 void init_simulator();
 void delay_ms(int ms);

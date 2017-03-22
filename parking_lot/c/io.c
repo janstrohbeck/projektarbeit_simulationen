@@ -290,39 +290,51 @@ static void *logger(void *args) {
     return NULL;
 }
 
+#if DISPLAY_GATE_STATE
+#define LOG_ENTRY_GATE(message) sync_printf("EntryGate: %s\n", (message))
+#else
+#define LOG_ENTRY_GATE(message) ((void)0)
+#endif
+
 static call_queue_t entry_gate_request_queue;
 static sem_t entry_gate_sem_entered;
 
 static void *entry_gate_simulator(void *args) {
     while (1) {
         sem_t *sem_complete = call_queue_receive(&entry_gate_request_queue);
-        sync_printf("EntryGate: A car wants to enter!\n");
+        LOG_ENTRY_GATE("A car wants to enter!");
         
         simulator_state_set_entry_request(true);
 
-        sync_printf("EntryGate: Waiting for gate to open...\n");
+        LOG_ENTRY_GATE("Waiting for gate to open...");
         simulator_state_wait_entry_gate_open();
 
-        sync_printf("EntryGate: Gate open!\n");
+        LOG_ENTRY_GATE("Gate open!");
         simulator_state_set_entry_request(false);
         simulator_state_inc_car_cnt();
 
         // Notify car that gate has opened
         sem_post(sem_complete);
 
-        sync_printf("EntryGate: Waiting for car to drive through...\n");
+        LOG_ENTRY_GATE("Waiting for car to drive through...");
         sem_wait(&entry_gate_sem_entered);
 
-        sync_printf("EntryGate: Car is through!\n");
+        LOG_ENTRY_GATE("Car is through!");
         simulator_state_set_entry_sensor_state(false);
 
-        sync_printf("EntryGate: Waiting for gate to close...\n");
+        LOG_ENTRY_GATE("Waiting for gate to close...");
         simulator_state_wait_entry_gate_closed();
 
-        sync_printf("EntryGate: Gate closed!\n");
+        LOG_ENTRY_GATE("Gate closed!");
     }
     return NULL;
 }
+
+#if DISPLAY_GATE_STATE
+#define LOG_EXIT_GATE(message) sync_printf("ExitGate: %s\n", (message))
+#else
+#define LOG_EXIT_GATE(message) ((void)0)
+#endif
 
 static call_queue_t exit_gate_request_queue;
 static sem_t exit_gate_sem_left;
@@ -330,37 +342,44 @@ static sem_t exit_gate_sem_left;
 static void *exit_gate_simulator(void *args) {
     while (1) {
         sem_t *sem_complete = call_queue_receive(&exit_gate_request_queue);
-        sync_printf("ExitGate: A car wants to leave!\n");
+        LOG_EXIT_GATE("A car wants to leave!");
         
         simulator_state_set_exit_request(true);
 
-        sync_printf("ExitGate: Waiting for gate to open...\n");
+        LOG_EXIT_GATE("Waiting for gate to open...");
         simulator_state_wait_exit_gate_open();
 
-        sync_printf("ExitGate: Gate open!\n");
+        LOG_EXIT_GATE("Gate open!");
         simulator_state_set_exit_request(false);
         simulator_state_dec_car_cnt();
 
         // Notify car that gate has opened
         sem_post(sem_complete);
 
-        sync_printf("ExitGate: Waiting for car to drive through...\n");
+        LOG_EXIT_GATE("Waiting for car to drive through...");
         sem_wait(&exit_gate_sem_left);
 
-        sync_printf("ExitGate: Car is through!\n");
+        LOG_EXIT_GATE("Car is through!");
         simulator_state_set_exit_sensor_state(false);
 
-        sync_printf("ExitGate: Waiting for gate to close...\n");
+        LOG_EXIT_GATE("Waiting for gate to close...");
         simulator_state_wait_exit_gate_closed();
 
-        sync_printf("ExitGate: Gate closed!\n");
+        LOG_EXIT_GATE("Gate closed!");
     }
     return NULL;
 }
 
+#if DISPLAY_CAR_STATE
+#define LOG_CAR(id, message) sync_printf("Car %d: %s\n", (id), (message))
+#else
+#define LOG_CAR(id, message) ((void)0)
+#endif
+
 static void *car(void *args) {
     car_state_t state = DRIVING;
     int id = args == NULL ? 0 : *((int *)args);
+    (void)id;
     sem_t enter_complete;
     sem_init(&enter_complete, 0, 0);
     sem_t leave_complete;
@@ -368,32 +387,32 @@ static void *car(void *args) {
 
     while (1) {
         if (state == DRIVING && gen_random(0, 99) < 10) {
-            sync_printf("Car %d: wanting to enter.\n", id);
+            LOG_CAR(id, "wanting to enter.");
             simulator_state_inc_entry_queue_cnt();
             int ret = call_queue_trycall(&entry_gate_request_queue, &enter_complete, 30000);
             simulator_state_dec_entry_queue_cnt();
             if (ret) {
-                sync_printf("Car %d: giving up.\n", id);
+                LOG_CAR(id, "giving up.");
             } else {
                 sem_wait(&enter_complete);
-                sync_printf("Car %d: driving through gate!.\n", id);
+                LOG_CAR(id, "driving through gate!");
                 delay_ms(2000);
-                sync_printf("Car %d: went through gate!.\n", id);
+                LOG_CAR(id, "went through gate!");
                 sem_post(&entry_gate_sem_entered);
-                sync_printf("Car %d: now parked.\n", id);
+                LOG_CAR(id, "now parked.");
                 state = PARKED;
             }
         } else if (state == PARKED && gen_random(0, 99) < 3) {
-            sync_printf("Car %d: wanting to leave.\n", id);
+            LOG_CAR(id, "wanting to leave.");
             simulator_state_inc_exit_queue_cnt();
             call_queue_call(&exit_gate_request_queue, &leave_complete);
             simulator_state_dec_exit_queue_cnt();
             sem_wait(&leave_complete);
-            sync_printf("Car %d: driving through gate!.\n", id);
+            LOG_CAR(id, "driving through gate!");
             delay_ms(2000);
-            sync_printf("Car %d: went through gate!.\n", id);
+            LOG_CAR(id, "went through gate!");
             sem_post(&exit_gate_sem_left);
-            sync_printf("Car %d: now outside.\n", id);
+            LOG_CAR(id, "now outside.");
             state = DRIVING;
         }
         delay_ms(1000);

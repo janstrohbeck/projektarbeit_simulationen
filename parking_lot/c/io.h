@@ -3,6 +3,10 @@
 
 #include "data_types.h"
 
+#define DISPLAY_LOGGER 1
+#define DISPLAY_GATE_STATE 0
+#define DISPLAY_CAR_STATE 0
+
 void init_simulator();
 int sync_printf(const char *format, ...);
 void delay_ms(int ms);

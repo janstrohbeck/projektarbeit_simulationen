@@ -64,6 +64,7 @@ procedure Main is
             else
                 Write(Full);
             end if;
+            delay 0.1;
         end loop;
     end Signal;
 begin

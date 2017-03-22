@@ -121,13 +121,15 @@ package body IO is
     task Logger;
     task body Logger is
     begin
-        loop
-            Put_Line("Temp: " & Temp_Reading'Image(TempState.Temp) &
-                    " (Heater: " & Heater_Setting'Image(TempState.Heater) & ")" &
-                    " | Pressure: " & Pressure_Reading'Image(PressureState.Pressure) &
-                    " (Setting: " & Pressure_Setting'Image(PressureState.Setting) & ")");
-            delay 0.25;
-        end loop;
+        if DISPLAY_LOGGER then
+            loop
+                Put_Line("Temp: " & Temp_Reading'Image(TempState.Temp) &
+                        " (Heater: " & Heater_Setting'Image(TempState.Heater) & ")" &
+                        " | Pressure: " & Pressure_Reading'Image(PressureState.Pressure) &
+                        " (Setting: " & Pressure_Setting'Image(PressureState.Setting) & ")");
+                delay 0.25;
+            end loop;
+        end if;
     end Logger;
 
     procedure Read(TR : out Temp_Reading) is
@@ -152,14 +154,17 @@ package body IO is
 
     procedure Write(TR : Temp_Reading) is
     begin
-        --Put_Line("Console: Read Temp: " & Temp_Reading'Image(TR));
+        if DISPLAY_CONSOLE then
+            Put_Line("Console: Read Temp: " & Temp_Reading'Image(TR));
+        end if;
         null;
     end Write;
 
     procedure Write(PR : Pressure_Reading) is
     begin
-        --Put_Line("Console: Read Pressure: " & Pressure_Reading'Image(PR));
-        null;
+        if DISPLAY_CONSOLE then
+            Put_Line("Console: Read Pressure: " & Pressure_Reading'Image(PR));
+        end if;
     end Write;
 begin
     RandomState.InitRandom;

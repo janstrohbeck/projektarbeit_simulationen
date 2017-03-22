@@ -122,7 +122,7 @@ static void *pressure_simulator(void *args) {
     return NULL;
 }
 
-#if ENABLE_LOGGER
+#if DISPLAY_LOGGER
 static void *logger(void *args) {
     while (1) {
         printf("Temp: %d (Heater: %s) | Pressure: %d (Setting: %d)\n",
@@ -151,7 +151,7 @@ void init_simulator() {
     pthread_t pressure_simulator_thread;
     if (pthread_create(&pressure_simulator_thread, NULL, pressure_simulator, NULL) != 0) exit(EXIT_FAILURE);
 
-#if ENABLE_LOGGER
+#if DISPLAY_LOGGER
     pthread_t logger_thread;
     if (pthread_create(&logger_thread, NULL, logger, NULL) != 0) exit(EXIT_FAILURE);
 #endif
@@ -184,13 +184,13 @@ void write_pressure_setting(pressure_setting_t PS) {
 }
 
 void write_temp_reading(temp_reading_t TR) {
-#if ENABLE_CONSOLE
+#if DISPLAY_CONSOLE
     printf("Console: Read Temp: %d\n", TR);
 #endif
 }
 
 void write_pressure_reading(pressure_reading_t PR) {
-#if ENABLE_CONSOLE
+#if DISPLAY_CONSOLE
     printf("Console: Read Pressure: %d\n", PR);
 #endif
 }
