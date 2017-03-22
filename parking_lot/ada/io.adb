@@ -23,6 +23,9 @@ package body IO is
         function GetEntryGateState return EntryGateState;
         function GetExitGateState return ExitGateState;
         function GetSignalState return SignalState;
+        function GetCarCnt return Natural;
+        function GetEntryQueueCnt return Natural;
+        function GetExitQueueCnt return Natural;
 
         -- Setters
         procedure SetEntryGateState(E : EntryGateState);
@@ -39,21 +42,18 @@ package body IO is
         entry WaitForEntryGateClosed;
         entry WaitForExitGateClosed;
 
-        -- Accessing, incrementing and decrementing the total number of cars in
+        -- Incrementing and decrementing the total number of cars in
         -- the parking lot
         procedure IncCarCnt;
         procedure DecCarCnt;
-        function GetCarCnt return Natural;
 
-        -- Accessing, incrementing and decrementing the number of cars in the
+        -- Incrementing and decrementing the number of cars in the
         -- entry queue
         procedure IncEntryQueueCnt;
         procedure DecEntryQueueCnt;
-        function GetEntryQueueCnt return Natural;
 
-        -- Accessing, incrementing and decrementing the ber of cars in the
+        -- Incrementing and decrementing the ber of cars in the
         -- exit QueueCnt
-        function GetExitQueueCnt return Natural;
         procedure IncExitQueueCnt;
         procedure DecExitQueueCnt;
     private 

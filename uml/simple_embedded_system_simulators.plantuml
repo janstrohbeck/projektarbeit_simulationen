@@ -33,10 +33,10 @@ class PressureState << (M,orange) monitor >> {
     -setting : PressureSetting
     .. Getters ..
     +get_pressure() : PressureReading
-    +get_setting() : PressureSetting
+    +get_pressure_setting() : PressureSetting
     .. Setters ..
     +set_pressure(PR : PressureReading)
-    +set_setting(PS : PressureSetting)
+    +set_pressure_setting(PS : PressureSetting)
 }
 
 class PressureSimulator << (T,#ADD1B2) Thread >> {
@@ -44,11 +44,26 @@ class PressureSimulator << (T,#ADD1B2) Thread >> {
 }
 }
 
+class Logger << (T,#ADD1B2) Thread >> {
+    +run()
+}
+
+class RandomState << (M,orange) monitor >> {
+    -seed : Object
+    +init_random()
+    +get_random() : Natural
+}
+
 TempSimulator -> TempState
+TempSimulator -> RandomState
 IO -> TempState
 
 PressureSimulator -> PressureState
+PressureSimulator -> RandomState
 IO -> PressureState
+
+Logger -> TempState
+Logger -> PressureState
 }
 
 @enduml

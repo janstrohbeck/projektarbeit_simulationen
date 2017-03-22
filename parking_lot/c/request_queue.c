@@ -1,20 +1,20 @@
-#include "call_queue.h"
+#include "request_queue.h"
 #include <stdlib.h>
 #include <malloc.h>
 
-void call_queue_init(call_queue_t * const queue) {
+void request_queue_init(request_queue_t * const queue) {
     queue->first = NULL;
     queue->last = NULL;
     pthread_mutex_init(&queue->mutex, NULL);
     pthread_cond_init(&queue->cond_not_empty, NULL);
 }
 
-sem_t *call_queue_receive(call_queue_t * const queue) {
+sem_t *request_queue_receive(request_queue_t * const queue) {
     pthread_mutex_lock(&queue->mutex);
 
     while (queue->first == NULL) pthread_cond_wait(&queue->cond_not_empty, &queue->mutex);
 
-    call_queue_entry_t *entry = queue->first;
+    request_queue_entry_t *entry = queue->first;
     entry->received = 1;
     queue->first = entry->next;
     if (entry == queue->last) {
@@ -41,9 +41,9 @@ static struct timespec timeInTheFuture(int ms) {
     return now;
 }
 
-int call_queue_trycall(call_queue_t * const queue, sem_t * const cond_complete, const int timeout_ms) {
+int request_queue_tryenqueue(request_queue_t * const queue, sem_t * const cond_complete, const int timeout_ms) {
     struct timespec timeout = timeInTheFuture(timeout_ms);
-    call_queue_entry_t *entry = (call_queue_entry_t *)malloc(sizeof(call_queue_entry_t));
+    request_queue_entry_t *entry = (request_queue_entry_t *)malloc(sizeof(request_queue_entry_t));
 
     pthread_cond_init(&entry->cond_rendezvous, NULL);
     entry->cond_complete = cond_complete;
@@ -96,6 +96,6 @@ int call_queue_trycall(call_queue_t * const queue, sem_t * const cond_complete, 
     return res;
 }
 
-void call_queue_call(call_queue_t * const queue, sem_t * const cond_complete) {
-    call_queue_trycall(queue, cond_complete, -1);
+void request_queue_enqueue(request_queue_t * const queue, sem_t * const cond_complete) {
+    request_queue_tryenqueue(queue, cond_complete, -1);
 }

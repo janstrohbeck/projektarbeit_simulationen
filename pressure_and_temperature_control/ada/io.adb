@@ -26,20 +26,20 @@ package body IO is
     end RandomState;
 
     protected TempState is
-        function Temp return Temp_Reading;
-        procedure SetTemp(TR: Temp_Reading);
-        function Heater return Heater_Setting;
-        procedure SetHeater(HS: Heater_Setting);
+        function GetTemp return TempReading;
+        procedure SetTemp(TR: TempReading);
+        function GetHeaterSetting return HeaterSetting;
+        procedure SetHeaterSetting(HS: HeaterSetting);
     private
-        mTemp : Temp_Reading := 0;
-        mHeater : Heater_Setting := Off;
+        temp : TempReading := 0;
+        heater_setting : HeaterSetting := Off;
     end TempState;
 
     protected body TempState is
-        function Temp return Temp_Reading is (mTemp);
-        procedure SetTemp(TR: Temp_Reading) is begin mTemp := TR; end SetTemp;
-        function Heater return Heater_Setting is (mHeater);
-        procedure SetHeater(HS: Heater_Setting) is begin mHeater := HS; end SetHeater;
+        function GetTemp return TempReading is (temp);
+        procedure SetTemp(TR: TempReading) is begin temp := TR; end SetTemp;
+        function GetHeaterSetting return HeaterSetting is (heater_setting);
+        procedure SetHeaterSetting(HS: HeaterSetting) is begin heater_setting := HS; end SetHeaterSetting;
     end TempState;
 
     task TempSimulator;
@@ -47,7 +47,7 @@ package body IO is
         newTemp : Integer;
     begin
         loop
-            newTemp := Integer(TempState.Temp);
+            newTemp := Integer(TempState.GetTemp);
 
             if RandomState.GetRandom < 6 then
                 if RandomState.GetRandom < 50 then
@@ -57,38 +57,38 @@ package body IO is
                 end if;
             end if;
 
-            if TempState.Heater = On then
+            if TempState.GetHeaterSetting = On then
                 newTemp := newTemp + 1;
             else
                 newTemp := newTemp - 2;
             end if;
 
-            if newTemp < Integer(Temp_Reading'First) then
-                newTemp := Integer(Temp_Reading'First);
-            elsif newTemp > Integer(Temp_Reading'Last) then
-                newTemp := Integer(Temp_Reading'Last);
+            if newTemp < Integer(TempReading'First) then
+                newTemp := Integer(TempReading'First);
+            elsif newTemp > Integer(TempReading'Last) then
+                newTemp := Integer(TempReading'Last);
             end if;
 
-            TempState.SetTemp(Temp_Reading(newTemp));
+            TempState.SetTemp(TempReading(newTemp));
             delay 0.25;
         end loop;
     end TempSimulator;
 
     protected PressureState is
-        function Pressure return Pressure_Reading;
-        procedure SetPressure(PR: Pressure_Reading);
-        function Setting return Pressure_Setting;
-        procedure SetSetting(PS: Pressure_Setting);
+        function GetPressure return PressureReading;
+        procedure SetPressure(PR: PressureReading);
+        function GetPressureSetting return PressureSetting;
+        procedure SetPressureSetting(PS: PressureSetting);
     private
-        mPressure : Pressure_Reading := 800;
-        mSetting : Pressure_Setting := 0;
+        pressure : PressureReading := 800;
+        setting : PressureSetting := 0;
     end PressureState;
 
     protected body PressureState is
-        function Pressure return Pressure_Reading is (mPressure);
-        procedure SetPressure(PR: Pressure_Reading) is begin mPressure := PR; end SetPressure;
-        function Setting return Pressure_Setting is (mSetting);
-        procedure SetSetting(PS: Pressure_Setting) is begin mSetting := PS; end SetSetting;
+        function GetPressure return PressureReading is (pressure);
+        procedure SetPressure(PR: PressureReading) is begin pressure := PR; end SetPressure;
+        function GetPressureSetting return PressureSetting is (setting);
+        procedure SetPressureSetting(PS: PressureSetting) is begin setting := PS; end SetPressureSetting;
     end PressureState;
 
     task PressureSimulator;
@@ -96,7 +96,7 @@ package body IO is
         newPressure : Integer;
     begin
         loop
-            newPressure := Integer(PressureState.Pressure);
+            newPressure := Integer(PressureState.GetPressure);
             if RandomState.GetRandom < 10 then
                 if RandomState.GetRandom < 50 then
                     newPressure := newPressure + 30;
@@ -104,16 +104,16 @@ package body IO is
                     newPressure := newPressure - 30;
                 end if;
             else
-                newPressure := newPressure + Integer(PressureState.Setting);
+                newPressure := newPressure + Integer(PressureState.GetPressureSetting);
             end if;
 
-            if newPressure < Integer(Pressure_Reading'First) then
-                newPressure := Integer(Pressure_Reading'First);
-            elsif newPressure > Integer(Pressure_Reading'Last) then
-                newPressure := Integer(Pressure_Reading'Last);
+            if newPressure < Integer(PressureReading'First) then
+                newPressure := Integer(PressureReading'First);
+            elsif newPressure > Integer(PressureReading'Last) then
+                newPressure := Integer(PressureReading'Last);
             end if;
 
-            PressureState.SetPressure(Pressure_Reading(newPressure));
+            PressureState.SetPressure(PressureReading(newPressure));
             delay 0.25;
         end loop;
     end PressureSimulator;
@@ -123,47 +123,47 @@ package body IO is
     begin
         if DISPLAY_LOGGER then
             loop
-                Put_Line("Temp: " & Temp_Reading'Image(TempState.Temp) &
-                        " (Heater: " & Heater_Setting'Image(TempState.Heater) & ")" &
-                        " | Pressure: " & Pressure_Reading'Image(PressureState.Pressure) &
-                        " (Setting: " & Pressure_Setting'Image(PressureState.Setting) & ")");
+                Put_Line("Temp: " & TempReading'Image(TempState.GetTemp) &
+                        " (Heater: " & HeaterSetting'Image(TempState.GetHeaterSetting) & ")" &
+                        " | Pressure: " & PressureReading'Image(PressureState.GetPressure) &
+                        " (Setting: " & PressureSetting'Image(PressureState.GetPressureSetting) & ")");
                 delay 0.25;
             end loop;
         end if;
     end Logger;
 
-    procedure Read(TR : out Temp_Reading) is
+    procedure Read(TR : out TempReading) is
     begin
-        TR := TempState.Temp;
+        TR := TempState.GetTemp;
     end Read;
 
-    procedure Read(PR : out Pressure_Reading) is
+    procedure Read(PR : out PressureReading) is
     begin
-        PR := PressureState.Pressure;
+        PR := PressureState.GetPressure;
     end Read;
 
-    procedure Write(HS : Heater_Setting) is
+    procedure Write(HS : HeaterSetting) is
     begin
-        TempState.SetHeater(HS);
+        TempState.SetHeaterSetting(HS);
     end Write;
 
-    procedure Write(PS : Pressure_Setting) is
+    procedure Write(PS : PressureSetting) is
     begin
-        PressureState.SetSetting(PS);
+        PressureState.SetPressureSetting(PS);
     end Write;
 
-    procedure Write(TR : Temp_Reading) is
+    procedure Write(TR : TempReading) is
     begin
         if DISPLAY_CONSOLE then
-            Put_Line("Console: Read Temp: " & Temp_Reading'Image(TR));
+            Put_Line("Console: Read Temp: " & TempReading'Image(TR));
         end if;
         null;
     end Write;
 
-    procedure Write(PR : Pressure_Reading) is
+    procedure Write(PR : PressureReading) is
     begin
         if DISPLAY_CONSOLE then
-            Put_Line("Console: Read Pressure: " & Pressure_Reading'Image(PR));
+            Put_Line("Console: Read Pressure: " & PressureReading'Image(PR));
         end if;
     end Write;
 begin

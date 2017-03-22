@@ -13,9 +13,11 @@ exercises for students during a project work.
    parking_lot
    ptc
 
-Tools
-==================
+.. only:: html
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    Tools
+    ==================
+
+    * :ref:`genindex`
+    * :ref:`modindex`
+    * :ref:`search`

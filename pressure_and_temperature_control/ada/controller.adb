@@ -7,7 +7,7 @@ procedure Controller is
     task Pressure_Controller;
 
     task body Temp_Controller is
-        TR : Temp_Reading; HS : Heater_Setting;
+        TR : TempReading; HS : HeaterSetting;
     begin
         loop
             Read(TR);
@@ -19,7 +19,7 @@ procedure Controller is
     end Temp_Controller;
 
     task body Pressure_Controller is
-        PR : Pressure_Reading; PS : Pressure_Setting;
+        PR : PressureReading; PS : PressureSetting;
     begin
         loop
             Read(PR);

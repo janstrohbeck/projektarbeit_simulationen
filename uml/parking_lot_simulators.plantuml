@@ -1,6 +1,7 @@
 @startuml
 
 package "IO" {
+together {
 interface IO << global functions >> {
     +read_entry_request(ER: out EntryRequest);
     +read_exit_request(ER: out ExitRequest);
@@ -12,22 +13,33 @@ interface IO << global functions >> {
 }
 
 class SimulatorState << (M,orange) monitor >> {
-    -EntryRequest : EntryRequest
-    -ExitRequest : ExitRequest
-    -EntrySensorState : EntrySensorState
-    -ExitSensorState : ExitSensorState
-    -EntryGateState : EntryGateState
-    -ExitGateState : ExitGateState
-    -SignalState : SignalState
+    -random_seed : Object
+    -entry_request : EntryRequest
+    -exit_request : ExitRequest
+    -entry_sensor_state : EntrySensorState
+    -exit_sensor_state : ExitSensorState
+    -entry_gate_state : EntryGateState
+    -exit_gate_state : ExitGateState
+    -signal_state : SignalState
+    -car_cnt : Natural
+    -entry_queue_cnt : Natural
+    -exit_queue_cnt : Natural
+
+    +init_random()
 
     .. Getters ..
-    +get_entry_request(ER : out EntryRequest)
-    +get_exit_request(ER : out ExitRequest)
-    +get_entry_sensor_state(ER : out EntrySensorState)
-    +get_exit_sensor_state(ER : out ExitSensorState)
-    +get_entry_gate_state(ER : out EntryGateState)
-    +get_exit_gate_state(ER : out ExitGateState)
-    +get_signal_state(S : out SignalState)
+    +get_random() : Natural
+    +get_entry_request() : EntryRequest
+    +get_exit_request() : ExitRequest
+    +get_entry_sensor_state() : EntrySensorState
+    +get_exit_sensor_state() : ExitSensorState
+    +get_entry_gate_state() : EntryGateState
+    +get_exit_gate_state() : ExitGateState
+    +get_signal_state() : SignalState
+    +get_car_cnt() : SignalState
+    +get_entry_queue_cnt() : SignalState
+    +get_exit_queue_cnt() : SignalState
+
     .. Setters ..
     +set_entry_request(ER : EntryRequest)
     +set_exit_request(ER : ExitRequest)
@@ -36,6 +48,21 @@ class SimulatorState << (M,orange) monitor >> {
     +set_entry_gate_state(ER : EntryGateState)
     +set_exit_gate_state(ER : ExitGateState)
     +set_signal_state(S : SignalState)
+
+    .. Manipulators ..
+    +inc_car_cnt()
+    +dec_car_cnt()
+    +inc_entry_queue_cnt()
+    +dec_entry_queue_cnt()
+    +inc_exit_queue_cnt()
+    +dec_exit_queue_cnt()
+
+    .. Wait methods ..
+    +wait_entry_gate_open()
+    +wait_exit_gate_open()
+    +wait_entry_gate_closed()
+    +wait_exit_gate_closed()
+}
 }
 
 together {
@@ -44,6 +71,10 @@ class EntryGateSimulator << (T,#ADD1B2) Thread >> {
 }
 
 class ExitGateSimulator << (T,#ADD1B2) Thread >> {
+    +run()
+}
+
+class Logger << (T,#ADD1B2) Thread >> {
     +run()
 }
 }
@@ -78,5 +109,8 @@ EntryGateSimulator -> SimulatorState
 
 Car -> EntryGateRequestQueue
 Car -> ExitGateRequestQueue
+Car -> SimulatorState
+
+Logger -> SimulatorState
 
 @enduml
