@@ -3,8 +3,14 @@
 
 #include "data_types.h"
 
+// The logger prints the current number of cars in the parking lot, the
+// signal state and the number of cars in the queues, whenever any of these
+// values change.
 #define DISPLAY_LOGGER 1
+// If set to 1, this displays additional messages about the state of the
+// gate simulators, e.g. which user events they are waiting for.
 #define DISPLAY_GATE_STATE 0
+// If set to 1, cars print which actions they are going to take
 #define DISPLAY_CAR_STATE 0
 
 void init_simulator();

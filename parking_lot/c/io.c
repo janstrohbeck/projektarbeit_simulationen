@@ -1,5 +1,5 @@
 #include "io.h"
-#include "call_queue.h"
+#include "request_queue.h"
 #include <stdlib.h>
 #include <pthread.h>
 #include <time.h>
@@ -42,10 +42,16 @@ int sync_printf(const char *format, ...) {
     return ret;
 }
 
-static int gen_random(int min, int max) {
+static int simulator_state_init_random() {
+    srand(time(NULL));
+}
+
+static int simulator_state_get_random() {
     pthread_mutex_lock(&mutex);
     int res = rand_r(&simulator_state.rand_seed);
     pthread_mutex_unlock(&mutex);
+    static const int min = 0;
+    static const int max = 99;
     return min + res % (max-min+1);
 }
 
@@ -296,12 +302,12 @@ static void *logger(void *args) {
 #define LOG_ENTRY_GATE(message) ((void)0)
 #endif
 
-static call_queue_t entry_gate_request_queue;
+static request_queue_t entry_gate_request_queue;
 static sem_t entry_gate_sem_entered;
 
 static void *entry_gate_simulator(void *args) {
     while (1) {
-        sem_t *sem_complete = call_queue_receive(&entry_gate_request_queue);
+        sem_t *sem_complete = request_queue_receive(&entry_gate_request_queue);
         LOG_ENTRY_GATE("A car wants to enter!");
         
         simulator_state_set_entry_request(true);
@@ -336,12 +342,12 @@ static void *entry_gate_simulator(void *args) {
 #define LOG_EXIT_GATE(message) ((void)0)
 #endif
 
-static call_queue_t exit_gate_request_queue;
+static request_queue_t exit_gate_request_queue;
 static sem_t exit_gate_sem_left;
 
 static void *exit_gate_simulator(void *args) {
     while (1) {
-        sem_t *sem_complete = call_queue_receive(&exit_gate_request_queue);
+        sem_t *sem_complete = request_queue_receive(&exit_gate_request_queue);
         LOG_EXIT_GATE("A car wants to leave!");
         
         simulator_state_set_exit_request(true);
@@ -386,10 +392,10 @@ static void *car(void *args) {
     sem_init(&leave_complete, 0, 0);
 
     while (1) {
-        if (state == DRIVING && gen_random(0, 99) < 10) {
+        if (state == DRIVING && simulator_state_get_random(0, 99) < 10) {
             LOG_CAR(id, "wanting to enter.");
             simulator_state_inc_entry_queue_cnt();
-            int ret = call_queue_trycall(&entry_gate_request_queue, &enter_complete, 30000);
+            int ret = request_queue_tryenqueue(&entry_gate_request_queue, &enter_complete, 30000);
             simulator_state_dec_entry_queue_cnt();
             if (ret) {
                 LOG_CAR(id, "giving up.");
@@ -402,10 +408,10 @@ static void *car(void *args) {
                 LOG_CAR(id, "now parked.");
                 state = PARKED;
             }
-        } else if (state == PARKED && gen_random(0, 99) < 3) {
+        } else if (state == PARKED && simulator_state_get_random(0, 99) < 3) {
             LOG_CAR(id, "wanting to leave.");
             simulator_state_inc_exit_queue_cnt();
-            call_queue_call(&exit_gate_request_queue, &leave_complete);
+            request_queue_enqueue(&exit_gate_request_queue, &leave_complete);
             simulator_state_dec_exit_queue_cnt();
             sem_wait(&leave_complete);
             LOG_CAR(id, "driving through gate!");
@@ -430,7 +436,6 @@ void init_simulator() {
     pthread_cond_init(&cond_exit_gate_open, NULL);
     pthread_cond_init(&cond_entry_gate_closed, NULL);
     pthread_cond_init(&cond_exit_gate_closed, NULL);
-    srand(time(NULL));
 
     sem_init(&entry_gate_sem_entered, 0, 0);
     sem_init(&exit_gate_sem_left, 0, 0);
@@ -446,8 +451,10 @@ void init_simulator() {
     simulator_state.entry_queue_cnt = 0;
     simulator_state.exit_queue_cnt = 0;
 
-    call_queue_init(&entry_gate_request_queue);
-    call_queue_init(&exit_gate_request_queue);
+    simulator_state_init_random();
+
+    request_queue_init(&entry_gate_request_queue);
+    request_queue_init(&exit_gate_request_queue);
 
     pthread_t logger_thread;
     if (pthread_create(&logger_thread, NULL, logger, NULL) != 0) exit(EXIT_FAILURE);

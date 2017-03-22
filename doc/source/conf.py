@@ -124,9 +124,13 @@ latex_elements = {
     'babel': '\\usepackage[english]{babel}',
     #'preamble': '\\hyphenation{Entry-Gate-State Exit-Gate-State}\\DeclareFontFamily{\\encodingdefault}{\\ttdefault}{\\hyphenchar\\font=`\\-}'
     'preamble': r"""
+        % Allow hyphenation after _ in words
+        \usepackage[strings]{underscore}
+        % Define hyphenation for some words
         \hyphenation{Entry-Gate-State Exit-Gate-State Parking-Spots
         Entry-Request Entry-Sensor-State Exit-Sensor-State}
         \let\oldsphinxcode\sphinxcode
+        % Allow hyphenation for text in \sphinxcode commands
         \renewcommand{\sphinxcode}[1]{\oldsphinxcode{\hyphenchar\font=45{}#1}}
         """
 }
