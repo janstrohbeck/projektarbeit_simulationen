@@ -1,0 +1,242 @@
+\documentclass[oneside]{elaboration}
+\newmintedfile{qml}{frame=lines,linenos,mathescape,framesep=2mm,breaklines,fontsize=\footnotesize}
+\newmint{qml}{mathescape}
+\newmintinline{qml}{mathescape}
+\newminted{qml}{mathescape,breaklines}
+
+% Pfad für Eingabedateien
+\makeatletter
+\def\input@path{{chapters/}}
+\makeatother
+\graphicspath{{./images/},{../uml/build/}}
+
+\usepackage{relsize}
+%c from texinfo.tex
+\def\ifmonospace{\ifdim\fontdimen3\font=0pt }
+
+% Deckblatt
+
+\begin{document}
+
+\author{Jan Strohbeck}
+\title{\textbf{Simulation von Echtzeit-Prozessen in Ada und C/POSIX}}
+\doctype{Projektarbeit}
+\examinerA{Prof. Dr. Roland Dietrich}
+\date{27.\ März 2017}
+
+\maketitle
+\newpage
+
+% Inhaltsverzeichnis
+
+\tableofcontents
+\newpage
+
+\pagenumbering{Roman}
+\setcounter{page}{1}
+
+% Abbildungsverzeichnis
+
+\listoffigures
+\addcontentsline{toc}{chapter}{Abbildungsverzeichnis}
+\newpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% Use page style with header for chapters starting from here
+\renewcommand*{\chapterpagestyle}{scrheadings}
+
+% Einleitung
+\chapter{Einleitung}
+\label{chp:einleitung}
+
+In der vorliegenden Projektarbeit wurden zwei Simulationsprogramme erstellt,
+die reale Umgebungen simulieren sollen. Diese können später von Studenten dazu
+verwendet werden, Problemstellungen innerhalb dieser Umgebungen zu lösen. Die
+Umgebungen sind für die Vorlesung \enquote{Echtzeitsysteme} gedacht, in welcher
+die Studenten unter anderem lernen, nebenläufige Programme sowie die
+Kommunikation unter mehreren Threads zu verstehen und selbst zu entwickeln.
+Dabei kommen die Programmiersprachen Ada sowie C unter Verwendung der
+POSIX-Schnittstelle zum Einsatz. Die Simulationsumgebungen wurden daher jeweils in
+Ada und C umgesetzt, sodass die Studenten die Programmierung mit beiden
+Programmiersprachen bzw.\ Schnittstellen üben und vergleichen können.
+
+Im folgenden Kapitel werden zunächst die Grundlagen über die Programmierung von
+nebenläufigen Programmen in Ada sowie C/POSIX dargestellt. Danach wird in
+Kapitel \ref{chp:uebersicht_ueber_das_projekt} eine Übersicht über die Inhalte
+der Projektarbeit sowie die simulierten Umgebungen gegeben. In Kapitel
+\ref{chp:umsetzung} wird die Umsetzung des Projekts besprochen. Abschließend
+werden in den Kapiteln \ref{chp:diskussion} und \ref{chp:fazit} die Ergebnisse
+der Arbeit diskutiert sowie ein abschließendes Fazit gebildet.
+
+% Grundlagen
+\chapter{Grundlagen}
+\label{chp:grundlagen}
+
+In diesem Kapitel werden die Möglichkeiten zur Programmierung von nebenläufigen
+Programmen in Ada sowie C/POSIX aufgezeigt.
+
+% - C/POSIX
+\section{C/POSIX}
+\label{sec:c/posix}
+
+In der Programmiersprache C existieren selbst keine eingebauten
+Funktionalitäten, um parallele Abläufe umzusetzen. Programme werden prinzipiell
+in nur einem Thread ausgeführt. Um nebenläufige Threads verwenden zu können,
+muss auf Bibliotheken zurückgegriffen werden. Die gängigsten Betriebssysteme
+unterstützten mehrere Threads pro Prozess und bieten Bibliotheken, um diese in C
+nutzen zu können. POSIX, welches eine standardisierte Schnittstelle für
+Betriebssystem-Aufrufe darstellt, definiert Betriebssystem-Aufrufe, um innerhalb
+eines Prozesses mehrere Threads starten zu können. Um diese Aufrufe in C tätigen
+zu können, wird meist die \texttt{pthread}-Bibliothek verwendet, welche auf
+den meisten gängigen Betriebssystemen verfügbar ist. Damit können dann prinzipiell
+plattformunabhängig nebenläufige Programme entwickelt werden.
+
+POSIX und die \texttt{pthread}-Bibliothek definieren auch Konstrukte für die
+Synchronisierung mehrerer Threads, z.B.\ über Semaphoren, Mutexe,
+Bedingungsvariablen und Message Queues. Dies sind sehr systemnahe Konstrukte, es
+wird dabei viel Verantwortung dem Programmierer übertragen. Falsche Verwendung
+dieser Funktionen kann zu selten auftretenden und dadurch schwer auffindbaren
+Fehlern führen. Dennoch erlaubt die Systemnähe viel Kontrolle über den
+Programmablauf und kann effiziente Lösungen hervorbringen.
+
+% - Ada
+\section{Ada}
+\label{sec:ada}
+
+Die Programmiersprache Ada unterstützt nebenläufige Threads als sog.\
+\enquote{Tasks} als Sprachkonstrukt. Synchronisierung von Tasks und
+Nachrichtenaustausch zwischen diesen ist ebenso mit Sprachkonstrukten möglich.
+Es sind somit keine zusätzlichen Bibliotheken notwendig, es werden vom
+Ada-Compiler automatisch die vom Betriebssystem zur Verfügung gestellten
+Möglichkeiten zur Implementierung von Threads verwendet, oder über eine
+Laufzeitumgebung bereitgestellt (falls das Betriebssystem keine Threads
+unterstützt oder kein Betriebssystem vorhanden ist). Dadurch, dass Tasks,
+Synchronisation und Nachrichtenaustausch in die Sprache integriert sind,
+übernimmt die Programmiersprache die Verantwortung zur korrekten Umsetzung der
+so definierten Konstrukte. Damit können viele Arten von Fehlern direkt vermieden
+werden. Andererseits besitzt der Programmierer somit nicht mehr so viel
+Kontrolle über die genauen Abläufe in Programm, da diese abstrahiert wurden.
+
+% Übersicht über das Projekt
+\chapter{Übersicht über das Projekt}
+\label{chp:uebersicht_ueber_das_projekt}
+
+Hier soll ein kurzer Überblick über die einzelnen Teilsimulationen gegeben
+werden sowie über die Anforderungen an die Umsetzung dieser Simulationen.
+
+% - Druck- und Temperatursteuerung
+\section{Druck- und Temperatursteuerung}
+\label{sec:druck-_und_temperatursteuerung}
+
+Hier wird ein System simuliert, in welchem sich Druck und Temperatur dynamisch
+ändern. Darin soll es ein eingebettetes System geben, welches diese beiden
+Größen mithilfe von Sensoren messen kann und durch Aktoren (Heizung, Ventil)
+beeinflussen kann. Des Weiteren kann das eingebettete System die aktuellen Werte
+des Messgrößen auf ein Display schreiben. Dies ist in dem Diagramm in
+Abb.~\ref{fig:simple_embedded_system_overview} dargestellt.
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=0.9\textwidth]{simple_embedded_system_overview}
+\caption{Übersicht über die Druck- und Temperatursteuerung}
+\label{fig:simple_embedded_system_overview}
+\end{figure}
+
+Die Implementierung des eingebetteten Systems soll als Übung für die Studenten
+geschehen. Damit dies möglichst einfach ist, soll im Rahmen dieser Projektarbeit
+ein Grundgerüst geschaffen werden, welches Werte für Druck und Temperatur
+generiert, sowie die Methoden zum Abfragen dieser Werte sowie zum Ansteuern der
+simulierten Aktoren bereitstellt. Die Ansteuerung der Aktoren soll eine
+nachvollziehbare und einigermaßen realistischen Wirkung auf die Veränderung der
+Werte von Druck und Temperatur haben, sodass eine Regelung auf einen Sollwert
+möglich ist. Die Regelung selbst soll ebenfalls bereitgestellt werden, da die
+Implementierung von Regelungen nicht Teil der Übungen sein soll.
+
+% - Parkplatz-Steuerung
+\section{Parkplatz-Steuerung}
+\label{sec:parkplatz-steuerung}
+
+In dieser Übung soll ein einfacher Parkplatz simuliert werden, den Autos
+über zwei Schranken befahren oder verlassen. Außerdem soll eine Signallampe
+existieren, welche anzeigt, ob der Parkplatz voll ist oder nicht.
+
+Auch hier soll es ein eingebettetes System geben, welches die Ansteuerung der
+Schranken und des Signals übernimmt. Dafür kann es auf mehrere Sensoren
+zurückgreifen, welche ihm mitteilen, ob gerade Autos vor einer Schranke warten
+und ob gerade Autos unter einer Schranke hindurchfahren, wenn diese geöffnet
+ist. Abb.~\ref{fig:parking_lot_overview} stellt dieses System in einem Diagramm
+dar.
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=\textwidth]{parking_lot_overview}
+\caption{Übersicht über die Parkplatz-Simulation}
+\label{fig:parking_lot_overview}
+\end{figure}
+
+
+
+% - Dokumentation
+\section{Dokumentation}
+\label{sec:dokumentation}
+
+% - Sonstiges
+\section{Sonstiges}
+\label{sec:sonstiges}
+
+Anpassbarkeit der Log-Meldungen
+
+% Umsetzung
+\chapter{Umsetzung}
+\label{chp:umsetzung}
+
+% - Ada
+\section{Ada}
+\label{sec:ada}
+
+% - C/POSIX
+\section{C/POSIX}
+\label{sec:c/posix}
+
+% - Dokumentation
+\section{Dokumentation}
+\label{sec:dokumentation}
+
+Sphinx
+
+Python 2
+
+sphinxcontrib-adadomain
+
+Eigene adadomain.py
+
+% Diskussion
+\chapter{Diskussion}
+\label{chp:diskussion}
+
+% Fazit
+\chapter{Fazit}
+\label{chp:fazit}
+
+% Bibliografie
+
+\clearpage
+%\pagestyle{plain}
+%\renewcommand*{\chapterpagestyle}{plain}
+
+%\nocite{*}
+\addcontentsline{toc}{chapter}{Literatur}
+\printbibliography
+
+\appendix{}
+% Anhang
+\chapter{Anhang}
+\label{chp:anhang}
+
+% - Projekt-Dokumentation
+\section{Projekt-Dokumentation}
+\label{sec:projekt-dokumentation}
+
+\end{document}
