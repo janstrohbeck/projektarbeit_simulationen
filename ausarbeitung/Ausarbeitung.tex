@@ -1,8 +1,6 @@
 \documentclass[oneside]{elaboration}
-\newmintedfile{qml}{frame=lines,linenos,mathescape,framesep=2mm,breaklines,fontsize=\footnotesize}
-\newmint{qml}{mathescape}
-\newmintinline{qml}{mathescape}
-\newminted{qml}{mathescape,breaklines}
+\usepackage[strings]{underscore}
+\newminted{bash}{autogobble,xleftmargin=30pt}
 
 % Pfad für Eingabedateien
 \makeatletter
@@ -160,7 +158,11 @@ Implementierung von Regelungen nicht Teil der Übungen sein soll.
 
 In dieser Übung soll ein einfacher Parkplatz simuliert werden, den Autos
 über zwei Schranken befahren oder verlassen. Außerdem soll eine Signallampe
-existieren, welche anzeigt, ob der Parkplatz voll ist oder nicht.
+existieren, welche anzeigt, ob der Parkplatz voll ist oder nicht. Die Autos
+können sich vor den Schranken in eine Warteschlange einreihen, sie werden dann
+in der Reihenfolge der Ankunft bedient. Falls sie nicht innerhalb von 30
+Sekunden eingelassen werden, verlassen die Autos die Warteschlange wieder (nur
+bei der Schranke am Eingang).
 
 Auch hier soll es ein eingebettetes System geben, welches die Ansteuerung der
 Schranken und des Signals übernimmt. Dafür kann es auf mehrere Sensoren
@@ -176,41 +178,212 @@ dar.
 \label{fig:parking_lot_overview}
 \end{figure}
 
-
+Das eingebettete System soll von den Studenten unter Verwendung eines
+bereitgestellten Grundgerüsts als Übung durchgeführt werden. Dieses Grundgerüst
+soll mehrere Autos simulieren, welche sich in Warteschlangen vor den Schranken
+einreihen. Über bereitgestellte Methoden soll es für die Studenten möglich sein,
+die Sensoren abzufragen, sowie die Schranken und das Signal anzusteuern. Damit
+soll dann eine realistische Steuerung des Parkplatzes möglich sein.
 
 % - Dokumentation
 \section{Dokumentation}
 \label{sec:dokumentation}
+
+Damit die Verwendung für die Studenten möglichst einfach ist, soll eine
+umfangreiche Dokumentation erstellt werden, welche die notwendigen Schritte zur
+Verwendung der Simulationen aufführt sowie eine Übersicht über die
+bereitgestellten Methoden mitsamt Beschreibungen enthält. Für interessierte
+Studenten sollen auch die Details der Implementierung in die Dokumentation
+aufgenommen werden.
 
 % - Sonstiges
 \section{Sonstiges}
 \label{sec:sonstiges}
 
-Anpassbarkeit der Log-Meldungen
+Beide Simulationen sollen außerdem sowohl in Ada und in C verfügbar sein, sodass
+die Studenten die Übungen in beiden Programmiersprachen bearbeiten können.
+Des Weiteren sollen die Simulationen auf der Konsole Ausgaben produzieren,
+welche den aktuellen Zustand der Simulation nachvollziehen lassen. Diese
+Ausgaben sollen konfigurierbar sein, sodass die Studenten auch eine eigene
+Anzeige für die Anwendungen implementieren können.
 
 % Umsetzung
 \chapter{Umsetzung}
 \label{chp:umsetzung}
 
-% - Ada
-\section{Ada}
-\label{sec:ada}
+In diesem Kapitel wird die Umsetzung der im vorigen Kapitel beschrieben
+Aufgabenstellung beschrieben.
 
-% - C/POSIX
-\section{C/POSIX}
-\label{sec:c/posix}
+% - Druck- und Temperatursteuerung
+\section{Druck- und Temperatursteuerung}
+\label{sec:druck-_und_temperatursteuerung}
+
+Für die Druck- und Temperatursteuerung wurde ein Grundgerüst in Ada und C
+programmiert, welche die im vorigen Kapitel dargestellten Anforderungen erfüllt.
+Dabei wurden die für die jeweilige Sprache verfügbaren Möglichkeiten zur
+Umsetzung von nebenläufigen Threads und Synchronisierung verwendet, d.h.\ Tasks
+und protected objects in Ada, sowie POSIX-Threads und -Mutexe in C. Es gibt
+jeweils einen Thread für die Simulation von Temperatur und Druck.
+
+Prinzipiell wurde die Simulation dabei einfach gehalten, Temperatur und Druck
+ändern sich nach einem einfachen Prinzip je nach aktivierter Heizung und
+Ventileinstellung. Zusätzlich werden zufällige Störungen (etwa durch äußere
+Einflüsse) simuliert. Die Studenten können bereits implementierte Funktionen für
+die Regelung verwenden, sodass nur die Nebenläufigkeit und der prinzipielle
+Ablauf implementiert werden müssen.
+
+Für weitere Details zur Implementierung wird hier auf die Dokumentation für
+Studenten in Anhang~\ref{sec:projekt-dokumentation} verwiesen (siehe auch
+Kapitel~\ref{sec:dokumentation}).
+
+% - Parkplatz-Steuerung
+\section{Parkplatz-Steuerung}
+\label{sec:parkplatz-steuerung}
+
+Das Grundgerüst für die Parkplatz-Steuerung wurde ebenfalls in Ada und C
+implementiert. Dabei werden mehrere Threads erzeugt, welche die Schranken und
+Autos simulieren. Dabei agieren die Autos autonom und wählen zufällig aus, ob
+sie den Parkplatz betreten oder verlassen möchten (nur wenn sie bereits auf dem
+Parkplatz sind). Dabei können sie Anfragen an die Threads stellen, die die
+Schranken simulieren. Diese verwalten jeweils eine Warteschlage, damit die Autos
+in der Reihenfolge eingelassen werden können, wie sie die Anfrage gestellt
+haben. Die Umsetzung der Warteschlage erfolgte in Ada mithilfe der eingebauten
+Inter-Task-Kommunikation, in C wurde mithilfe von POSIX-Mutexen,
+-Bedingungsvariablen und Semaphoren eine ähnliche Funktionalität nachgebildet.
+
+Weitere Details zur Implementierung können der Dokumentation in
+Anhang~\ref{sec:projekt-dokumentation} entnommen werden (siehe auch
+Kapitel~\ref{sec:dokumentation}).
 
 % - Dokumentation
 \section{Dokumentation}
 \label{sec:dokumentation}
 
-Sphinx
+% -- Sphinx
+\subsection{Sphinx}
+\label{sec:sphinx}
 
-Python 2
+Um die Verwendung der Simulationsumgebungen für die Studenten einfach zu
+gestalten, wurde eine umfangreiche Dokumentation erstellt. Dafür wurde das
+Programm \texttt{Sphinx} verwendet. Dieses erlaubt es, mithilfe von Markup-Text
+Dokumentation für Software in verschiedenen Formaten zu erstellen (u.a.\ HTML
+und LaTeX). Als Markup-Sprache kommt hier ReStructured Text (ReST) zum Einsatz.
+Neben Text können dort Befehle verwendet werden, um Abschnitte zu untergliedern,
+Bilder oder Sourcecode einzubinden und Funktionen, Prozeduren oder Datentypen zu
+dokumentieren. Dabei können auch Verlinkungen und Verzeichnisse für Inhalt und
+dokumentierte Funktionen/Datentypen erstellt werden.
 
-sphinxcontrib-adadomain
+Ein wesentlicher Vorteil der Erstellung der Dokumentation für dieses Projekt mit
+Sphinx ist, dass die Dokumentation so für beide Simulationsumgebungen und in
+beiden Programmiersprachen in eine einzige Webseite oder PDF-Datei (mithilfe von
+LaTeX) gepackt werden konnte. Es kann somit im selben Dokument allgemein eine
+Übersicht über eine Umgebung beschrieben werden und dann Code in C und Ada
+dokumentiert werden, sowie beliebig auf Code in beiden Programmiersprachen
+referenziert werden. Andere Programme zur Erzeugung von Dokumentation erlauben
+meist nur die Verwendung von einer einzigen Programmiersprache in einem Projekt,
+sodass in der Regel mehrere Webseiten oder PDF-Dokumente generiert werden.
+Ebenso unterstützen die meisten gängigen Dokumentationsprogramme wie z.B.\
+Doxygen Ada nicht. Mit Sphinx kann auch die Dokumentation von Funktionen oder
+Datentypen innerhalb von Text erfolgen. Es ist somit sehr einfach, die
+Dokumentation im Stil einer Anleitung oder eines Tutorials aufzubauen. Die
+meisten Programme, welche die Dokumentation aus Kommentaren im Quellcode
+aufbauen, erzeugen hingegen oft nur eine Auflistung der dokumentierten
+Funktionen, ohne weiteren Text dazwischen zu erlauben. Da die Dokumentation mehr
+als Anleitung zur Verwendung für die Studenten gedacht ist, ist die
+Vorgehensweise von Sphinx für diese Projekt hier besser geeignet.
 
-Eigene adadomain.py
+Leider ist die Unterstützung von Ada auch bei Sphinx nicht so gut wie für z.B.\
+C oder Python. Beispielsweise wird das Index-Verzeichnis für Ada-Funktionen
+nicht korrekt erstellt, außerdem werden Typ-Namen in Parameterlisten von
+Prozeduren nicht automatisch verlinkt, wie das z.B.\ bei C der Fall ist. Dies
+liegt vor allem daran, dass die Bibliothek \texttt{adadomain}, welche die
+Unterstützung von Ada für Sphinx implementiert, zuletzt im Jahr 2013
+aktualisiert wurde und nicht perfekt mehr mit der neuesten Version von Sphinx
+zusammenarbeitet. Im Rahmen der Projektarbeit wurden Anpassungen an dieser
+Bibliothek vorgenommen, sodass diese die automatische Verlinkung unterstützt und
+die Verzeichnisse korrekt generiert werden. Dies war möglich, da Sphinx sowie
+dessen Erweiterungen als Open Source vorliegen. Die Änderungen werden eventuell
+noch als Pull Request in das Bitbucket-Repository eingebracht, sodass auch
+andere von diesen Korrekturen und Anpassungen profitieren können. Dafür müssen
+aber noch weitere Tests durchgeführt werden, da die Korrekturen nur insoweit
+vorgenommen wurden, dass die Ausgabe für dieses Projekt korrekt sind. Ob dadurch
+nicht weitere Inkompatibilitäten mit anderen Projekten entstanden sind, wurde
+noch nicht getestet. In Kapitel~\ref{sec:kompilierung_setup} wird beschrieben,
+wie die angepasste Version eingebunden werden kann. Eine Diff-Datei, welche die
+vorgenommenen Änderungen enthält, ist auf der beiliegenden CD ebenfalls
+enthalten (s.\ Kap.~\ref{sec:aufbau_der_verzeichnisse}).
+
+% -- Diagramme
+\subsection{Diagramme}
+\label{sec:diagramme}
+
+Innerhalb der Dokumentation (und dieses Dokuments) wurden zur
+Veranschaulichung Diagramme verwendet. Diese wurden mithilfe des Programms
+\texttt{plantuml} erzeugt, welches die Definition der Diagramminhalte durch
+lesbaren ASCII-Text ermöglicht. Die Diagramme können damit dann als SVG (für die
+HTML-Dokumentation) und als EPS oder PDF (zum Einbinden in LaTeX) generiert
+werden.
+
+% - Aufbau der Verzeichnisse
+\section{Aufbau der Verzeichnisse}
+\label{sec:aufbau_der_verzeichnisse}
+
+Auf der beiliegenden CD sind unter anderem die Quelldateien für die beiden
+Simulationsumgebungen sowie für die Dokumentation und diese Ausarbeitung
+enthalten. Folgende Ordner sind enthalten:
+
+\begin{description}
+    \item[parking\_lot/ada] Enthält die Ada-Quellen für die Parkplatz-Simulation
+    \item[parking\_lot/c] Enthält die C-Quellen für die Parkplatz-Simulation
+    \item[pressure\_and\_temperature\_control/ada] Enthält die Ada-Quellen für die Druck- und Temperatursteuerung 
+    \item[pressure\_and\_temperature\_control/c] Enthält die C-Quellen für die Druck- und Temperatursteuerung 
+    \item[doc] Enthält die ReST-Quellen für die Dokumentation
+    \item[uml] Enthält die plantuml-Quellen für die Diagramme
+    \item[ausarbeitung] Enthält die LaTeX-Quellen für diese Ausarbeitung
+    \item[praesentation] Enthält die LaTeX-Quellen für den Projekt-Vortrag
+    \item[adadomain] Enthält die angepasste Version der
+        \texttt{adadomain}-Bibliothek. Die Datei
+        \texttt{changes\_janstrohbeck.diff} beinhaltet die vorgenommenen
+        Änderungen.
+\end{description}
+
+% - Kompilierung, Setup
+\section{Kompilierung, Setup}
+\label{sec:kompilierung_setup}
+
+Die Ada-Quellen können mit dem GNAT Compiler kompiliert werden, die C-Quellen
+z.B.\ mit dem gcc-Compiler unter Verwendung des Linker-Flags \texttt{-lpthread}.
+
+Für die Erstellung der Dokumentation ist Python 2.7 sowie Sphinx
+notwendig\footnote{Eine Installationsanleitung befindet sich hier:
+\url{http://www.sphinx-doc.org/en/stable/install.html}}
+
+Die angepasste Sphinx-Erweiterung \texttt{adadomain} kann über die Kommandozeile
+installiert werden. Dazu muss im \texttt{adadomain}-Verzeichnis zuerst der
+folgende Befehl ausgeführt werden:
+
+\begin{bashcode}
+    python setup.py build
+\end{bashcode}
+
+Danach muss der folgende Befehl mit Administratorrechten ausgeführt werden:
+
+\begin{bashcode}
+    python setup.py install
+\end{bashcode}
+
+Die Dokumentation kann dann im Verzeichnis \texttt{doc} entweder mithilfe des
+Makefiles erstellt werden (hierfür muss das Programm \texttt{make} installiert
+sein) oder mithilfe der Windows-Batch-Datei \texttt{make.bat}. Dazu
+müssen folgende Befehle ausgeführt werden:
+
+\begin{bashcode}
+    make html
+    make latexpdf
+\end{bashcode}
+
+In den Unterordnern des Ordners \texttt{build} können dann die erzeugten
+Dokumentationen (HTML und LaTeX) gefunden werden.
 
 % Diskussion
 \chapter{Diskussion}
