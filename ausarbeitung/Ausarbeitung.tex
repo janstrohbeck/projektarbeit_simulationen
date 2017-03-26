@@ -336,20 +336,20 @@ Simulationsumgebungen sowie für die Dokumentation und diese Ausarbeitung
 enthalten. Folgende Ordner sind enthalten:
 
 \begin{description}
-    \item[parking\_lot/ada] Enthält die Ada-Quellen für die Parkplatz-Simulation
-    \item[parking\_lot/c] Enthält die C-Quellen für die Parkplatz-Simulation
-    \item[pressure\_and\_temperature\_control/ada] Enthält die Ada-Quellen für die Druck- und Temperatursteuerung 
-    \item[pressure\_and\_temperature\_control/c] Enthält die C-Quellen für die Druck- und Temperatursteuerung 
-    \item[doc] Enthält die ReST-Quellen für die Dokumentation
-    \item[uml] Enthält die PlantUML-Quellen für die Diagramme
-    \item[ausarbeitung] Enthält die LaTeX-Quellen für diese Ausarbeitung
-    \item[praesentation] Enthält die LaTeX-Quellen für den Projekt-Vortrag
-    \item[docker] Enthält das Dockerfile, mit dem das Docker-Image generiert
-        werden kann
     \item[adadomain] Enthält die angepasste Version der
         \texttt{adadomain}-Bibliothek. Die Datei
         \texttt{changes\_janstrohbeck.diff} beinhaltet die vorgenommenen
         Änderungen.
+    \item[ausarbeitung] Enthält die LaTeX-Quellen für diese Ausarbeitung
+    \item[doc] Enthält die ReST-Quellen für die Dokumentation
+    \item[docker] Enthält das Dockerfile, mit dem das Docker-Image generiert
+        werden kann
+    \item[parking\_lot/ada] Enthält die Ada-Quellen für die Parkplatz-Simulation
+    \item[parking\_lot/c] Enthält die C-Quellen für die Parkplatz-Simulation
+    \item[praesentation] Enthält die LaTeX-Quellen für den Projekt-Vortrag
+    \item[pressure\_and\_temperature\_control/ada] Enthält die Ada-Quellen für die Druck- und Temperatursteuerung 
+    \item[pressure\_and\_temperature\_control/c] Enthält die C-Quellen für die Druck- und Temperatursteuerung 
+    \item[uml] Enthält die PlantUML-Quellen für die Diagramme
 \end{description}
 
 % - Kompilierung, Setup
@@ -394,7 +394,8 @@ Unter Linux/MacOS kann dann die Shell-Datei \texttt{docker\_compile} bzw.\ unter
 Windows die Batch-Datei \texttt{docker_compile.bat} verwendet werden, um die
 Programme auf dem Docker-Image zu verwenden. Die folgenden Befehle bauen die
 Dokumentation, wenn sie im Hauptverzeichnis des Projekts ausgeführt werden
-(unter Linux/MacOS muss ./docker\_compile verwendet werden):
+(unter Linux/MacOS muss ./docker\_compile verwendet werden, eventuell muss noch
+das executable-bit gesetzt werden [\texttt{chmod +x ./docker\_compile}]):
 
 \begin{bashcode}
     docker_compile doc html
