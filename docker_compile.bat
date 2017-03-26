@@ -1,6 +1,6 @@
 @ECHO OFF
 IF "%1"=="" GOTO Error
-docker run -it -v %cd%:/data jstroh/latex_sphinx_plantuml make -C $@
+docker run -it -v %cd%:/data jstroh/latex_sphinx_plantuml make -C %*
 GOTO End
 
 :Error
