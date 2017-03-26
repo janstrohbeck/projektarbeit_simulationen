@@ -65,8 +65,9 @@ nebenläufigen Programmen in Ada sowie C/POSIX dargestellt. Danach wird in
 Kapitel \ref{chp:uebersicht_ueber_das_projekt} eine Übersicht über die Inhalte
 der Projektarbeit sowie die simulierten Umgebungen gegeben. In Kapitel
 \ref{chp:umsetzung} wird die Umsetzung des Projekts besprochen. Abschließend
-werden in den Kapiteln \ref{chp:diskussion} und \ref{chp:fazit} die Ergebnisse
-der Arbeit diskutiert sowie ein abschließendes Fazit gebildet.
+werden in den Kapiteln~\ref{chp:evaluation}, \ref{chp:zusammenfassung} und
+\ref{chp:ausblick} die Ergebnisse der Arbeit ausgewertet und zusammengefasst
+sowie ein Ausblick auf mögliche Erweiterungen präsentiert.
 
 % Grundlagen
 \chapter{Grundlagen}
@@ -204,8 +205,7 @@ Beide Simulationen sollen außerdem sowohl in Ada und in C verfügbar sein, soda
 die Studenten die Übungen in beiden Programmiersprachen bearbeiten können.
 Des Weiteren sollen die Simulationen auf der Konsole Ausgaben produzieren,
 welche den aktuellen Zustand der Simulation nachvollziehen lassen. Diese
-Ausgaben sollen konfigurierbar sein, sodass die Studenten auch eine eigene
-Anzeige für die Anwendungen implementieren können.
+Ausgaben sollen außerdem konfigurierbar bzw.\ abschaltbar sein.
 
 % Umsetzung
 \chapter{Umsetzung}
@@ -306,7 +306,7 @@ dessen Erweiterungen als Open Source vorliegen. Die Änderungen werden eventuell
 noch als Pull Request in das Bitbucket-Repository eingebracht, sodass auch
 andere von diesen Korrekturen und Anpassungen profitieren können. Dafür müssen
 aber noch weitere Tests durchgeführt werden, da die Korrekturen nur insoweit
-vorgenommen wurden, dass die Ausgabe für dieses Projekt korrekt sind. Ob dadurch
+vorgenommen wurden, dass die Ausgabe für dieses Projekt korrekt ist. Ob dadurch
 nicht weitere Inkompatibilitäten mit anderen Projekten entstanden sind, wurde
 noch nicht getestet. In Kapitel~\ref{sec:kompilierung_setup} wird beschrieben,
 wie die angepasste Version eingebunden werden kann. Eine Diff-Datei, welche die
@@ -385,13 +385,71 @@ müssen folgende Befehle ausgeführt werden:
 In den Unterordnern des Ordners \texttt{build} können dann die erzeugten
 Dokumentationen (HTML und LaTeX) gefunden werden.
 
-% Diskussion
-\chapter{Diskussion}
-\label{chp:diskussion}
+% Evaluation
+\chapter{Evaluation}
+\label{chp:evaluation}
 
-% Fazit
-\chapter{Fazit}
-\label{chp:fazit}
+In diesem Kapitel sollen die im vorherigen Kapitel dargestellten Ergebnisse der
+Arbeit diskutiert werden.
+
+% - Simulationen
+\section{Simulationen}
+\label{sec:simulationen}
+
+Die Simulationsumgebungen für den Parkplatz und die Druck- und
+Temperatursteuerung sind vollständig implementiert und funktionsfähig. Außerdem
+wurden sie so programmiert, dass keine Probleme durch die Verwendung von
+mehreren Threads auftreten. Dies wurde dadurch verifiziert, dass sämtliche
+delay-Anweisungen temporär entfernt wurden, und auch nach längerer
+Programmlaufzeit keine Crashes oder sonstiges Fehlverhalten mehr entstanden.
+
+Die Umgebungen sind auch komplett getrennt von den Teilen der Übung, welche von
+den Studenten zu schreiben sind. Dadurch können sich die Studenten ganz auf die
+Entwicklung ihres Teils der Übung konzentrieren, ohne sich in die Details der
+Implementierung einarbeiten zu müssen. Dennoch ist es für interessierte
+Studenten möglich, mithilfe der Dokumentation die Implementierung zu verstehen.
+
+Durch Kapselung der bereitgestellten Komponenten in eigenständige Module wurde
+außerdem erreicht, dass auf die Simulation nicht ohne Änderung des Quellcodes
+der Module zugegriffen werden kann, außer über die im Interface definierten
+Funktionen.
+
+% - Dokumentation
+\section{Dokumentation}
+\label{sec:dokumentation}
+
+Die im Rahmen dieser Projektarbeit erstellte Dokumentation ist sehr umfangreich
+und umfasst viel Fließtext und Diagramme, sodass die Verwendung der
+Simulationsumgebungen sehr einfach wird. Auch die Implementierung ist
+ausführlich dokumentiert, sodass eine Einarbeitung in die Simulationen gut
+möglich ist. Der Code wurde zudem ebenfalls insoweit kommentiert, dass weitere
+Details, welche in der Dokumentation nicht enthalten sind, ebenfalls
+verständlich werden.
+
+% Zusammenfassung
+\chapter{Zusammenfassung}
+\label{chp:zusammenfassung}
+
+Insgesamt kann gesagt werden, dass die in
+Kapitel~\ref{chp:uebersicht_ueber_das_projekt} definierten Anforderungen an
+diese Projektarbeit erfüllt wurden. Die Simulationsumgebungen werden das
+Implementieren von Lösungen für die Übungen für die Studenten voraussichtlich
+sehr erleichtern und zudem die Nützlichkeit und Anwendung von nebenläufiger
+Programmierung an konkreten Beispielen veranschaulichen.
+
+% Ausblick
+\chapter{Ausblick}
+\label{chp:ausblick}
+
+Auf Basis der in dieser Projektarbeit geschaffenen Simulationsumgebungen können
+in Zukunft noch weitere Verbesserungen vorgenommen werden. Zum Beispiel könnte
+die Simulation von Druck und Temperatur noch realistischer simuliert werden,
+indem z.B.\ ein realer chemischer Prozess simuliert wird. Es könnten dann auch
+aufwändigere, praxisnähere Regelungen wie etwa PID-Regler implementiert werden.
+Für den Zweck, dass Studenten in der Umgebung einfache Programme entwickeln, war
+zum Zeitpunkt der Anfertigung dieser Arbeit nicht erforderlich.  Zukünftige
+Arbeiten könnten jedoch auf dieser Arbeit aufbauend die Simulationen noch
+realistischer gestalten.
 
 % Bibliografie
 
@@ -411,5 +469,10 @@ Dokumentationen (HTML und LaTeX) gefunden werden.
 % - Projekt-Dokumentation
 \section{Projekt-Dokumentation}
 \label{sec:projekt-dokumentation}
+
+Auf den folgenden Seiten kann die PDF-Version der Dokumentation für die
+Studenten gefunden werden. Die Dokumentation enthält neben der Beschreibung zur
+Verwendung der bereitgestellten Bibliotheken auch die Details der
+Implementierung.
 
 \end{document}
