@@ -322,7 +322,7 @@ provided by the IO package:
 
 .. c:function:: void read_exit_request(bool *ER)
 
-   Reads if a request to enter was made by a car. The result will be stored in
+   Reads if a request to exit was made by a car. The result will be stored in
    the variable pointed to by ``ER``.
 
 .. c:function:: void read_entry_sensor_state(bool *ESS)
@@ -382,6 +382,15 @@ included.
 
    A synchronized version of ``printf``.
 
+Delay
++++++
+
+The IO module also provides a function to halt a thread for a specified number
+of milliseconds:
+
+.. c:function:: void delay_ms(int ms)
+
+   Halts the current thread for a given number of milliseconds (``ms``).
 
 
 .. _parking_lot_implementation:

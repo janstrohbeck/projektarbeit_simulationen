@@ -302,6 +302,29 @@ procedures should allow easy regulation of the temperature and pressure.
    1000 (mbar). Requires the current pressure (PR) and stores the result
    in the variable pointed to by PS.
 
+Delay
++++++
+
+The IO module also provides a function to halt a thread for a specified number
+of milliseconds:
+
+.. c:function:: void delay_ms(int ms)
+
+   Halts the current thread for a given number of milliseconds (``ms``).
+
+Log output customization
+++++++++++++++++++++++++
+
+The simulation library allows customization of which output is printed. The
+configuration can be performed in ``io.h``::
+
+    // The logger prints the current temperature and pressure values, as well as
+    // the current heater and valve settings.
+    #define DISPLAY_LOGGER 1
+    // If set to 1, the messages sent to the display are printed in the console
+    #define DISPLAY_CONSOLE 1
+
+
 .. _ptc_implementation:
 
 Implementation details

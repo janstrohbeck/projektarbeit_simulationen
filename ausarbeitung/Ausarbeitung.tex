@@ -87,36 +87,39 @@ muss auf Bibliotheken zurückgegriffen werden. Die gängigsten Betriebssysteme
 unterstützten mehrere Threads pro Prozess und bieten Bibliotheken, um diese in C
 nutzen zu können. POSIX, welches eine standardisierte Schnittstelle für
 Betriebssystem-Aufrufe darstellt, definiert Betriebssystem-Aufrufe, um innerhalb
-eines Prozesses mehrere Threads starten zu können. Um diese Aufrufe in C tätigen
+eines Prozesses mehrere Threads starten zu können \citep[vgl.][]{Pthread}. Um diese Aufrufe in C tätigen
 zu können, wird meist die \texttt{pthread}-Bibliothek verwendet, welche auf
 den meisten gängigen Betriebssystemen verfügbar ist. Damit können dann prinzipiell
 plattformunabhängig nebenläufige Programme entwickelt werden.
 
 POSIX und die \texttt{pthread}-Bibliothek definieren auch Konstrukte für die
 Synchronisierung mehrerer Threads, z.B.\ über Semaphoren, Mutexe,
-Bedingungsvariablen und Message Queues. Dies sind sehr systemnahe Konstrukte, es
-wird dabei viel Verantwortung dem Programmierer übertragen. Falsche Verwendung
-dieser Funktionen kann zu selten auftretenden und dadurch schwer auffindbaren
-Fehlern führen. Dennoch erlaubt die Systemnähe viel Kontrolle über den
-Programmablauf und kann effiziente Lösungen hervorbringen.
+Bedingungsvariablen und Message Queues \citep[vgl.][]{Pthread}. Dies sind sehr
+systemnahe Konstrukte, es wird dabei viel Verantwortung dem Programmierer
+übertragen. Falsche Verwendung dieser Funktionen kann zu selten auftretenden und
+dadurch schwer auffindbaren Fehlern führen. Dennoch erlaubt die Systemnähe viel
+Kontrolle über den Programmablauf und kann effiziente Lösungen hervorbringen.
 
 % - Ada
 \section{Ada}
 \label{sec:ada}
 
 Die Programmiersprache Ada unterstützt nebenläufige Threads als sog.\
-\enquote{Tasks} als Sprachkonstrukt. Synchronisierung von Tasks und
-Nachrichtenaustausch zwischen diesen ist ebenso mit Sprachkonstrukten möglich.
-Es sind somit keine zusätzlichen Bibliotheken notwendig, es werden vom
-Ada-Compiler automatisch die vom Betriebssystem zur Verfügung gestellten
-Möglichkeiten zur Implementierung von Threads verwendet, oder über eine
-Laufzeitumgebung bereitgestellt (falls das Betriebssystem keine Threads
-unterstützt oder kein Betriebssystem vorhanden ist). Dadurch, dass Tasks,
-Synchronisation und Nachrichtenaustausch in die Sprache integriert sind,
-übernimmt die Programmiersprache die Verantwortung zur korrekten Umsetzung der
-so definierten Konstrukte. Damit können viele Arten von Fehlern direkt vermieden
-werden. Andererseits besitzt der Programmierer somit nicht mehr so viel
-Kontrolle über die genauen Abläufe in Programm, da diese abstrahiert wurden.
+\enquote{Tasks} als Sprachkonstrukt \citep[vgl.][]{AdaTasks}. Synchronisierung
+von Tasks und Nachrichtenaustausch zwischen diesen ist ebenso mit
+Sprachkonstrukten möglich \citep[vgl.][]{AdaIntertaskComm,AdaPO}. Es sind somit
+keine zusätzlichen Bibliotheken notwendig, es werden vom Ada-Compiler
+automatisch die vom Betriebssystem zur Verfügung gestellten Möglichkeiten zur
+Implementierung von Threads verwendet, oder, falls das Betriebssystem keine
+Threads unterstützt oder kein Betriebssystem vorhanden ist, über eine
+Laufzeitumgebung bereitgestellt \citep[vgl.][]{AdaTaskImpl}.
+
+Dadurch, dass Tasks, Synchronisation und Nachrichtenaustausch in die Sprache
+integriert sind, übernimmt die Programmiersprache die Verantwortung zur
+korrekten Umsetzung der so definierten Konstrukte. Damit können viele Arten von
+Fehlern direkt vermieden werden. Andererseits besitzt der Programmierer somit
+nicht mehr so viel Kontrolle über die genauen Abläufe in Programm, da diese
+abstrahiert wurden.
 
 % Übersicht über das Projekt
 \chapter{Übersicht über das Projekt}
@@ -267,7 +270,8 @@ Um die Verwendung der Simulationsumgebungen für die Studenten einfach zu
 gestalten, wurde eine umfangreiche Dokumentation erstellt. Dafür wurde das
 Programm \texttt{Sphinx} verwendet. Dieses erlaubt es, mithilfe von Markup-Text
 Dokumentation für Software in verschiedenen Formaten zu erstellen (u.a.\ HTML
-und LaTeX). Als Markup-Sprache kommt hier ReStructured Text (ReST) zum Einsatz.
+und LaTeX, vgl.~\cite{Sphinx}). Als Markup-Sprache kommt hier ReStructured Text
+(ReST) zum Einsatz \citep[vgl.][]{Sphinx}.
 Neben Text können dort Befehle verwendet werden, um Abschnitte zu untergliedern,
 Bilder oder Sourcecode einzubinden und Funktionen, Prozeduren oder Datentypen zu
 dokumentieren. Dabei können auch Verlinkungen und Verzeichnisse für Inhalt und
@@ -298,7 +302,7 @@ nicht korrekt erstellt, außerdem werden Typ-Namen in Parameterlisten von
 Prozeduren nicht automatisch verlinkt, wie das z.B.\ bei C der Fall ist. Dies
 liegt vor allem daran, dass die Bibliothek \texttt{adadomain}, welche die
 Unterstützung von Ada für Sphinx implementiert, zuletzt im Jahr 2013
-aktualisiert wurde und nicht perfekt mehr mit der neuesten Version von Sphinx
+aktualisiert wurde und nicht mehr perfekt mit der neuesten Version von Sphinx
 zusammenarbeitet. Im Rahmen der Projektarbeit wurden Anpassungen an dieser
 Bibliothek vorgenommen, sodass diese die automatische Verlinkung unterstützt und
 die Verzeichnisse korrekt generiert werden. Dies war möglich, da Sphinx sowie
@@ -308,10 +312,9 @@ andere von diesen Korrekturen und Anpassungen profitieren können. Dafür müsse
 aber noch weitere Tests durchgeführt werden, da die Korrekturen nur insoweit
 vorgenommen wurden, dass die Ausgabe für dieses Projekt korrekt ist. Ob dadurch
 nicht weitere Inkompatibilitäten mit anderen Projekten entstanden sind, wurde
-noch nicht getestet. In Kapitel~\ref{sec:kompilierung_setup} wird beschrieben,
-wie die angepasste Version eingebunden werden kann. Eine Diff-Datei, welche die
-vorgenommenen Änderungen enthält, ist auf der beiliegenden CD ebenfalls
-enthalten (s.\ Kap.~\ref{sec:aufbau_der_verzeichnisse}).
+noch nicht getestet. Die angepasste Version ist auf der beiliegenden DVD
+enthalten. Ebenso liegt eine Diff-Datei bei, welche die vorgenommenen Änderungen
+enthält (s.\ Kap.~\ref{sec:aufbau_der_verzeichnisse}).
 
 % -- Diagramme
 \subsection{Diagramme}
@@ -319,7 +322,7 @@ enthalten (s.\ Kap.~\ref{sec:aufbau_der_verzeichnisse}).
 
 Innerhalb der Dokumentation (und dieses Dokuments) wurden zur
 Veranschaulichung Diagramme verwendet. Diese wurden mithilfe des Programms
-\texttt{plantuml} erzeugt, welches die Definition der Diagramminhalte durch
+\texttt{PlantUML} erzeugt, welches die Definition der Diagramminhalte durch
 lesbaren ASCII-Text ermöglicht. Die Diagramme können damit dann als SVG (für die
 HTML-Dokumentation) und als EPS oder PDF (zum Einbinden in LaTeX) generiert
 werden.
@@ -328,7 +331,7 @@ werden.
 \section{Aufbau der Verzeichnisse}
 \label{sec:aufbau_der_verzeichnisse}
 
-Auf der beiliegenden CD sind unter anderem die Quelldateien für die beiden
+Auf der beiliegenden DVD sind unter anderem die Quelldateien für die beiden
 Simulationsumgebungen sowie für die Dokumentation und diese Ausarbeitung
 enthalten. Folgende Ordner sind enthalten:
 
@@ -338,9 +341,11 @@ enthalten. Folgende Ordner sind enthalten:
     \item[pressure\_and\_temperature\_control/ada] Enthält die Ada-Quellen für die Druck- und Temperatursteuerung 
     \item[pressure\_and\_temperature\_control/c] Enthält die C-Quellen für die Druck- und Temperatursteuerung 
     \item[doc] Enthält die ReST-Quellen für die Dokumentation
-    \item[uml] Enthält die plantuml-Quellen für die Diagramme
+    \item[uml] Enthält die PlantUML-Quellen für die Diagramme
     \item[ausarbeitung] Enthält die LaTeX-Quellen für diese Ausarbeitung
     \item[praesentation] Enthält die LaTeX-Quellen für den Projekt-Vortrag
+    \item[docker] Enthält das Dockerfile, mit dem das Docker-Image generiert
+        werden kann
     \item[adadomain] Enthält die angepasste Version der
         \texttt{adadomain}-Bibliothek. Die Datei
         \texttt{changes\_janstrohbeck.diff} beinhaltet die vorgenommenen
@@ -351,39 +356,98 @@ enthalten. Folgende Ordner sind enthalten:
 \section{Kompilierung, Setup}
 \label{sec:kompilierung_setup}
 
-Die Ada-Quellen können mit dem GNAT Compiler kompiliert werden, die C-Quellen
-z.B.\ mit dem gcc-Compiler unter Verwendung des Linker-Flags \texttt{-lpthread}.
+Die Ada-Quellen können mit dem GNAT Compiler kompiliert werden. Dazu kann z.B.
+die Entwicklungsumgebung GNAT GPL verwendet werden \citep[vgl.][]{GNAT}. Die
+C-Quellen können z.B.\ mit dem gcc-Compiler unter Verwendung des Linker-Flags
+\texttt{-lpthread} kompiliert werden. Der gcc-Compiler ist wie GNAT auf allen
+üblichen Betriebssystemen verfügbar \citep[vgl.][]{GCC}.
 
-Für die Erstellung der Dokumentation ist Python 2.7 sowie Sphinx
-notwendig\footnote{Eine Installationsanleitung befindet sich hier:
-\url{http://www.sphinx-doc.org/en/stable/install.html}}
+Für die Erstellung der Dokumentation sind LaTeX, Python 2.7, Sphinx und PlantUML
+notwendig. Um ein umständliches Einrichten dieser Tools zu vermeiden, wurden die
+gesamten Entwicklungstools in ein Docker-Image gepackt. Docker ist dabei ein
+Programm, das Software in virtualisierten Containern (Images) ausführen kann
+\citep[vgl.][]{Docker}. Das ermöglicht es, Software fast ohne Einrichtung auf
+allen möglichen Plattformen auszuführen. Es wird nur das Programm
+\texttt{docker} benötigt\footnote{Installationsanleitungen für alle gängigen
+Betriebssysteme befinden sich hier:
+\url{https://docs.docker.com/engine/installation/}}.
 
-Die angepasste Sphinx-Erweiterung \texttt{adadomain} kann über die Kommandozeile
-installiert werden. Dazu muss im \texttt{adadomain}-Verzeichnis zuerst der
-folgende Befehl ausgeführt werden:
-
-\begin{bashcode}
-    python setup.py build
-\end{bashcode}
-
-Danach muss der folgende Befehl mit Administratorrechten ausgeführt werden:
-
-\begin{bashcode}
-    python setup.py install
-\end{bashcode}
-
-Die Dokumentation kann dann im Verzeichnis \texttt{doc} entweder mithilfe des
-Makefiles erstellt werden (hierfür muss das Programm \texttt{make} installiert
-sein) oder mithilfe der Windows-Batch-Datei \texttt{make.bat}. Dazu
-müssen folgende Befehle ausgeführt werden:
+Ist Docker installiert, so kann der Befehl
 
 \begin{bashcode}
-    make html
-    make latexpdf
+    docker pull jstroh/latex_sphinx_plantuml
 \end{bashcode}
 
-In den Unterordnern des Ordners \texttt{build} können dann die erzeugten
+verwendet werden, um das Image vom offiziellen Docker-Repository zu laden (ca
+5,5 GB). Alternativ kann das Image auch selbst gebaut werden. Dazu muss im
+Ordner \texttt{docker} folgender Befehl ausgeführt werden:
+
+\begin{bashcode}
+    docker build -t jstroh/latex_sphinx_plantuml .
+\end{bashcode}
+
+Das Image beinhaltet eine komplette LaTeX-Distribution, Sphinx, Python, PlantUML
+sowie deren Abhängigkeiten, die angepasste \texttt{adadomain}-Bibliothek und
+einige Hilfsprogramme. 
+
+Unter Linux/MacOS kann dann die Shell-Datei \texttt{docker\_compile} bzw.\ unter
+Windows die Batch-Datei \texttt{docker_compile.bat} verwendet werden, um die
+Programme auf dem Docker-Image zu verwenden. Die folgenden Befehle bauen die
+Dokumentation, wenn sie im Hauptverzeichnis des Projekts ausgeführt werden
+(unter Linux/MacOS muss ./docker\_compile verwendet werden):
+
+\begin{bashcode}
+    docker_compile doc html
+    docker_compile doc latexpdf
+\end{bashcode}
+
+%\footnote{Eine Installationsanleitung befindet sich hier: \url{http://www.sphinx-doc.org/en/stable/install.html}} 
+% Die angepasste Sphinx-Erweiterung \texttt{adadomain} kann über die Kommandozeile
+% installiert werden. Dazu muss im \texttt{adadomain}-Verzeichnis zuerst der
+% folgende Befehl ausgeführt werden:
+
+% \begin{bashcode}
+%     python setup.py build
+% \end{bashcode}
+
+% Danach muss der folgende Befehl mit Administratorrechten ausgeführt werden:
+
+% \begin{bashcode}
+%     python setup.py install
+% \end{bashcode}
+
+% Die Dokumentation kann dann im Verzeichnis \texttt{doc} kann über ein Makefile
+% erstellt werden (hierfür muss das Programm \texttt{make} installiert sein). Dazu
+% müssen folgende Befehle ausgeführt werden:
+
+% \begin{bashcode}
+%     make html
+%     make latexpdf
+% \end{bashcode}
+
+% In den Unterordnern des Ordners \texttt{build} können dann die erzeugten
+% Dokumentationen (HTML und LaTeX) gefunden werden. Für die Erstellung der
+% in der Dokumentation enthaltenen Diagramme ist das Programm \texttt{PlantUML}
+% notwendig. Dieses kann als JAR-Datei auf folgender Webseite heruntergeladen
+% werden: \texttt{http://plantuml.com/download}. Zur Ausführung ist dann eine
+% installierte Java-Runtime notwendig\footnote{z.B.\ \url{https://www.java.com/en/download/}}.
+% Im Makefile im Ordner \texttt{uml} muss
+% dann der Pfad zur JAR-Datei angepasst werden. Da LaTeX die Diagramme als PDF
+% einbinden will, muss zudem das Programm \texttt{epstopdf} installiert sein.
+% Dieses ist normalerweise Teil der LaTeX-Distribution. Falls es nicht im Pfad
+% enthalten ist, muss der Pfad zu diesem Programm ebenso im Makefile angepasst
+% werden.
+
+In den Unterordnern des Ordners \texttt{doc/build} können dann die erzeugten
 Dokumentationen (HTML und LaTeX) gefunden werden.
+
+Mithilfe des Docker-Images können auch diese Ausarbeitung sowie der
+Projektvortrag kompiliert werden:
+
+\begin{bashcode}
+    docker_compile ausarbeitung
+    docker_compile praesentation
+\end{bashcode}
 
 % Evaluation
 \chapter{Evaluation}
@@ -426,6 +490,16 @@ möglich ist. Der Code wurde zudem ebenfalls insoweit kommentiert, dass weitere
 Details, welche in der Dokumentation nicht enthalten sind, ebenfalls
 verständlich werden.
 
+% - Sonstiges
+\section{Sonstiges}
+\label{sec:sonstiges}
+
+Wie gefordert, sind die Ausgaben der Simulationen anpassbar. Außerdem wurde die
+Erstellung der Dokumentation durch die Verwendung von Docker und die Erstellung
+eines Images, welches alle Entwicklungstools enthält, sehr vereinfacht. So
+entfällt die aufwändige und fehleranfällige Einrichtung aller Tools bei jedem
+Entwickler weitestgehend.
+
 % Zusammenfassung
 \chapter{Zusammenfassung}
 \label{chp:zusammenfassung}
@@ -446,8 +520,9 @@ in Zukunft noch weitere Verbesserungen vorgenommen werden. Zum Beispiel könnte
 die Simulation von Druck und Temperatur noch realistischer simuliert werden,
 indem z.B.\ ein realer chemischer Prozess simuliert wird. Es könnten dann auch
 aufwändigere, praxisnähere Regelungen wie etwa PID-Regler implementiert werden.
+
 Für den Zweck, dass Studenten in der Umgebung einfache Programme entwickeln, war
-zum Zeitpunkt der Anfertigung dieser Arbeit nicht erforderlich.  Zukünftige
+zum Zeitpunkt der Anfertigung dieser Arbeit nicht erforderlich. Zukünftige
 Arbeiten könnten jedoch auf dieser Arbeit aufbauend die Simulationen noch
 realistischer gestalten.
 

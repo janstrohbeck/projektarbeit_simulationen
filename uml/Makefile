@@ -6,12 +6,15 @@ EPSS=$(addprefix $(OUTPUT_FOLDER)/,$(FILES:.plantuml=.eps))
 PNGS=$(addprefix $(OUTPUT_FOLDER)/,$(FILES:.plantuml=.png))
 PDFS=$(addprefix $(OUTPUT_FOLDER)/,$(FILES:.plantuml=.pdf))
 
-PLANTUML=plantuml
+# Change path to plantuml here
+PLANTUML=java -jar /opt/plantuml/plantuml.jar
+# Set path to epstopdf if it is not in PATH
+EPSTOPDF=epstopdf
+
 FLAGS_SVG=-tsvg
 FLAGS_EPS=-teps
 FLAGS_PNG=-tpng
 FLAGS_COMMON=-o $(OUTPUT_FOLDER)
-EPSTOPDF=epstopdf
 
 all: svgs epss pngs pdfs
 
