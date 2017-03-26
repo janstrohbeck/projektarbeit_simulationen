@@ -77,7 +77,7 @@ IO package. The definition of these data types allows specifying multiple
 As they are all defined as new types, they can not be accidentally converted
 into each other, which can help to prevent errors. The provided types are:
 
-.. ada:type:: type TempReading is new Integer range 0..500;
+.. ada:type:: type Data_Types.TempReading is new Integer range 0..500;
 
    defined as::
 
@@ -86,7 +86,7 @@ into each other, which can help to prevent errors. The provided types are:
    Can be used to save a temperature value (range is the sensor's utilizable
    temperature range, 0 to 500 degrees Celsius, for instance)
 
-.. ada:type:: type PressureReading is new Integer range 0..1200;
+.. ada:type:: type Data_Types.PressureReading is new Integer range 0..1200;
 
    defined as::
 
@@ -95,7 +95,7 @@ into each other, which can help to prevent errors. The provided types are:
    Can be used to save a pressure value (range is the sensor's utilizable
    pressure range, 0 to 1200 mbar, for instance)
 
-.. ada:type:: type HeaterSetting is (On, Off);
+.. ada:type:: type Data_Types.HeaterSetting is (On, Off);
 
    defined as::
 
@@ -104,7 +104,7 @@ into each other, which can help to prevent errors. The provided types are:
    Can be used to save the state of the heater. As it is controlled by a switch,
    the only two states are ``On`` and ``Off``.
 
-.. ada:type:: type PressureSetting is new Integer range -4..4;
+.. ada:type:: type Data_Types.PressureSetting is new Integer range -4..4;
 
    defined as::
 
