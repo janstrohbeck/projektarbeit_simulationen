@@ -6,5 +6,5 @@ Umgebungen zu simulieren, die dann von Studenten genutzt werden können, um mit
 diesen die Programmierung von Echtzeitsystemem zu üben.
 
 Die Umgebungen sind:
- - [Parkplatz-Steuerung](parkplatz_steuerung)
- - [Simulation eines regelbaren Systems](regelung_simulation)
+ - [Parkplatz-Steuerung](parking_lot)
+ - [Druck- und Temperatursteuerung](pressure_and_temperature_control)
