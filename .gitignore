@@ -2,6 +2,6 @@ tmp
 *.o
 *.ali
 main
-controller
+main_threadsafe
 build
 \?
