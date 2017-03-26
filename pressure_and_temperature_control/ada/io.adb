@@ -8,6 +8,7 @@ package body IO is
     package RandomGenerator is new Ada.Numerics.Discrete_Random(RandomResult);
     use RandomGenerator;
 
+    -- contains the state of the random generator
     protected RandomState is
         -- Inititalizes the random generator
         procedure InitRandom;
@@ -26,6 +27,7 @@ package body IO is
     end RandomState;
 
     protected TempState is
+        -- Getters and setters for the private attributes
         function GetTemp return TempReading;
         procedure SetTemp(TR: TempReading);
         function GetHeaterSetting return HeaterSetting;
@@ -49,6 +51,7 @@ package body IO is
         loop
             newTemp := Integer(TempState.GetTemp);
 
+            -- apply random errors (6% probability)
             if RandomState.GetRandom < 6 then
                 if RandomState.GetRandom < 50 then
                     newTemp := newTemp + 4;
@@ -57,12 +60,14 @@ package body IO is
                 end if;
             end if;
 
+            -- heat up if heater is on, cool down if heater is off
             if TempState.GetHeaterSetting = On then
                 newTemp := newTemp + 1;
             else
                 newTemp := newTemp - 2;
             end if;
 
+            -- check bounds
             if newTemp < Integer(TempReading'First) then
                 newTemp := Integer(TempReading'First);
             elsif newTemp > Integer(TempReading'Last) then
@@ -75,6 +80,7 @@ package body IO is
     end TempSimulator;
 
     protected PressureState is
+        -- Getters and setters for the private attributes
         function GetPressure return PressureReading;
         procedure SetPressure(PR: PressureReading);
         function GetPressureSetting return PressureSetting;
@@ -97,16 +103,20 @@ package body IO is
     begin
         loop
             newPressure := Integer(PressureState.GetPressure);
+
+            -- apply random errors (10% probability)
             if RandomState.GetRandom < 10 then
                 if RandomState.GetRandom < 50 then
                     newPressure := newPressure + 30;
                 else
                     newPressure := newPressure - 30;
                 end if;
-            else
-                newPressure := newPressure + Integer(PressureState.GetPressureSetting);
             end if;
 
+            -- increment by the value of the setting
+            newPressure := newPressure + Integer(PressureState.GetPressureSetting);
+
+            -- check bounds
             if newPressure < Integer(PressureReading'First) then
                 newPressure := Integer(PressureReading'First);
             elsif newPressure > Integer(PressureReading'Last) then
@@ -122,6 +132,7 @@ package body IO is
     task body Logger is
     begin
         if DISPLAY_LOGGER then
+            -- periodically print the current state
             loop
                 Put_Line("Temp: " & TempReading'Image(TempState.GetTemp) &
                         " (Heater: " & HeaterSetting'Image(TempState.GetHeaterSetting) & ")" &
@@ -131,6 +142,8 @@ package body IO is
             end loop;
         end if;
     end Logger;
+
+    -- The following procedures just read from the state objects
 
     procedure Read(TR : out TempReading) is
     begin

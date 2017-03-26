@@ -4,11 +4,15 @@
 #include <stdio.h>
 #include <time.h>
 
+// Mutex that protects the temp_state
 static pthread_mutex_t temp_mutex;
+// Contains the current state of the temp simulator
 static struct {
     temp_reading_t temp;
     heater_setting_t setting;
 } temp_state;
+
+// Getters and setters for the temp_state's attributes
 
 static temp_reading_t get_temp() {
     pthread_mutex_lock(&temp_mutex);
@@ -36,11 +40,15 @@ static void set_heater_setting(heater_setting_t HS) {
     pthread_mutex_unlock(&temp_mutex);
 }
 
+// Mutex that protects the pressure_state
 static pthread_mutex_t pressure_mutex;
+// Contains the current state of the pressure simulator
 static struct {
     pressure_reading_t pressure;
     pressure_setting_t setting;
 } pressure_state;
+
+// Getters and setters for the pressure_state's attributes
 
 static pressure_reading_t get_pressure() {
     pthread_mutex_lock(&pressure_mutex);
@@ -68,13 +76,18 @@ static void set_pressure_setting(pressure_setting_t PS) {
     pthread_mutex_unlock(&pressure_mutex);
 }
 
+// Mutex that protects the random seed
 static pthread_mutex_t random_mutex;
+// The current state of the random generator
 static unsigned int rand_seed;
 
-static int gen_random(int min, int max) {
+// Generates a new random number between 0 and 99
+static int gen_random() {
     pthread_mutex_lock(&random_mutex);
     int res = rand_r(&rand_seed);
     pthread_mutex_unlock(&random_mutex);
+    static const int min = 0;
+    static const int max = 99;
     return min + res % (max-min+1);
 }
 
@@ -83,11 +96,15 @@ static void *temp_simulator(void *args) {
         temp_reading_t new_temp = get_temp();
         heater_setting_t setting = get_heater_setting();
 
-        if (gen_random(0, 99) < 6) {
-            new_temp += gen_random(0, 99) < 50 ? 4 : -4;
+        // apply random errors (6% probability)
+        if (gen_random() < 6) {
+            new_temp += gen_random() < 50 ? 4 : -4;
         }
+        
+        // heat up if heater is on, cool down if heater is off
         new_temp += setting == ON ? 1 : -2;
 
+        // check bounds
         if (new_temp > MAX_TEMP_READING) {
             new_temp = MAX_TEMP_READING;
         } else  if (new_temp < MIN_TEMP_READING) {
@@ -105,11 +122,15 @@ static void *pressure_simulator(void *args) {
         pressure_reading_t new_pressure = get_pressure();
         pressure_setting_t setting = get_pressure_setting();
 
-        if (gen_random(0, 99) < 10) {
-            new_pressure += gen_random(0, 99) < 50 ? 30 : -30;
+        // apply random errors (10% probability)
+        if (gen_random() < 10) {
+            new_pressure += gen_random() < 50 ? 30 : -30;
         }
+
+        // increment by the value of the setting
         new_pressure += setting;
 
+        // check bounds
         if (new_pressure > MAX_PRESSURE_READING) {
             new_pressure = MAX_PRESSURE_READING;
         } else if (new_pressure < MIN_PRESSURE_READING) {
@@ -124,6 +145,7 @@ static void *pressure_simulator(void *args) {
 
 #if DISPLAY_LOGGER
 static void *logger(void *args) {
+    // periodically print the current state
     while (1) {
         printf("Temp: %d (Heater: %s) | Pressure: %d (Setting: %d)\n",
                 get_temp(), get_heater_setting() == ON ? "ON" : "OFF",
@@ -160,6 +182,8 @@ void init_simulator() {
 void delay_ms(int ms) {
     nanosleep((const struct timespec[]){{0, ms*1000000L}}, NULL);
 }
+
+// The following procedures just read from the state objects
 
 void read_temp(temp_reading_t *TR) {
     pthread_mutex_lock(&temp_mutex);

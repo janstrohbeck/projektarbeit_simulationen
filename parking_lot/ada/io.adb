@@ -90,6 +90,9 @@ package body IO is
         procedure SetEntryGateState(E : EntryGateState) is
         begin
             entry_gate_state := E;
+            -- Set entry sensor to blocked immediately after the gate is opened.
+            -- This allows the main program to block immediately after opening the
+            -- gate, waiting for the sensor to be free again.
             if E = Open and entry_request = True then
                 entry_sensor_state := Blocked;
             end if;
@@ -98,6 +101,9 @@ package body IO is
         procedure SetExitGateState(E : ExitGateState) is
         begin
             exit_gate_state := E;
+            -- Set exit sensor to blocked immediately after the gate is opened.
+            -- This allows the main program to block immediately after opening the
+            -- gate, waiting for the sensor to be free again.
             if E = Open and exit_request = True then
                 exit_sensor_state := Blocked;
             end if;
@@ -134,61 +140,82 @@ package body IO is
         procedure DecExitQueueCnt is begin exit_queue_cnt := exit_queue_cnt - 1; end DecExitQueueCnt;
     end SimulatorState;
 
+    -- Declare Car task. Each car has a unique ID.
     task type Car(id : Integer);
+    -- We will instantiate 20 cars in the package body.
     cars : array(1..20) of access Car;
 
+    -- The task simulating the entry gate.
     task EntryGateSimulator is 
+        -- Cars can call this entry when they want to enter the parking lot.
+        -- They will be queued and blocked until this thread lets them in.
         entry enter;
+        -- After the 'enter' entry returns, cars must call this entry in order
+        -- to signal that they have finished entering the parking lot through
+        -- the gate.
         entry entered;
     end EntryGateSimulator;
 
+    -- The task simulating the exit gate.
     task ExitGateSimulator is 
+        -- Cars can call this entry when they want to leave the parking lot.
+        -- They will be queued and blocked until this thread lets them out.
         entry leave;
+        -- After the 'leave' entry returns, cars must call this entry in order
+        -- to signal that they have finished entering the parking lot through
+        -- the gate.
         entry left;
     end ExitGateSimulator;
 
+    -- A task that prints the current state of the simulation when the state changes.
     task Logger;
     task body Logger is
+        -- Flag that is used to print the state on first start of the task.
         start : Boolean := True;
 
+        -- Variables to save previous values of the state members in order to
+        -- check if something changed.
         prevSignalState : SignalState := Free;
         prevCarCnt : Natural := 0;
         prevEntryQueueCnt : Natural := 0;
         prevExitQueueCnt : Natural := 0;
 
-        tmpSignalState : SignalState;
-        tmpCarCnt : Natural;
-        tmpEntryQueueCnt : Natural;
-        tmpExitQueueCnt : Natural;
     begin
         if DISPLAY_LOGGER then
             loop
-                tmpSignalState := SimulatorState.GetSignalState;
-                tmpCarCnt := SimulatorState.GetCarCnt;
-                tmpEntryQueueCnt := SimulatorState.GetEntryQueueCnt;
-                tmpExitQueueCnt := SimulatorState.GetExitQueueCnt;
-
-                if start or else (
-                        tmpSignalState /= prevSignalState or 
-                        tmpCarCnt /= prevCarCnt or 
-                        tmpEntryQueueCnt /= prevEntryQueueCnt or 
-                        tmpExitQueueCnt /= prevExitQueueCnt) then
-                    Put_Line("Cars inside:" & Natural'Image(tmpCarCnt)
-                            & " | Signal: " & SignalState'Image(tmpSignalState)
-                            & " | Cars waiting to enter: " & Natural'Image(tmpEntryQueueCnt)
-                            & " | Cars waiting to leave: " & Natural'Image(tmpExitQueueCnt));
-                    start := False;
-                    prevSignalState := tmpSignalState;
-                    prevCarCnt := tmpCarCnt;
-                    prevEntryQueueCnt := tmpEntryQueueCnt;
-                    prevExitQueueCnt := tmpExitQueueCnt;
-                end if;
+                declare 
+                    -- The current values of the state members
+                    tmpSignalState : SignalState := SimulatorState.GetSignalState;
+                    tmpCarCnt : Natural := SimulatorState.GetCarCnt;
+                    tmpEntryQueueCnt : Natural := SimulatorState.GetEntryQueueCnt;
+                    tmpExitQueueCnt : Natural := SimulatorState.GetExitQueueCnt;
+                begin
+                    -- Check if something changed
+                    if start or else (
+                            tmpSignalState /= prevSignalState or 
+                            tmpCarCnt /= prevCarCnt or 
+                            tmpEntryQueueCnt /= prevEntryQueueCnt or 
+                            tmpExitQueueCnt /= prevExitQueueCnt) then
+                        -- print current state
+                        Put_Line("Cars inside:" & Natural'Image(tmpCarCnt)
+                                & " | Signal: " & SignalState'Image(tmpSignalState)
+                                & " | Cars waiting to enter: " & Natural'Image(tmpEntryQueueCnt)
+                                & " | Cars waiting to leave: " & Natural'Image(tmpExitQueueCnt));
+                        start := False;
+                        -- save current state values for comparison later
+                        prevSignalState := tmpSignalState;
+                        prevCarCnt := tmpCarCnt;
+                        prevEntryQueueCnt := tmpEntryQueueCnt;
+                        prevExitQueueCnt := tmpExitQueueCnt;
+                    end if;
+                end;
                 delay 0.1;
             end loop;
         end if;
     end Logger;
 
     task body EntryGateSimulator is
+        -- Log only if it is configured, prepend everything with "EntryGate: "
         procedure Log(message: String) is
         begin
             if DISPLAY_GATE_STATE then
@@ -197,6 +224,7 @@ package body IO is
         end Log;
     begin
         loop
+            -- Wait for a car to call enter
             accept enter do
                 Log("A car wants to enter!");
                 SimulatorState.SetEntryRequest(True);
@@ -208,6 +236,7 @@ package body IO is
             SimulatorState.IncCarCnt;
 
             Log("Waiting for car to drive through...");
+            -- Wait for car to call entered, signaling it has finished entering
             accept entered do
                 null;
             end entered;
@@ -221,6 +250,7 @@ package body IO is
     end EntryGateSimulator;
 
     task body ExitGateSimulator is
+        -- Log only if it is configured, prepend everything with "ExitGate: "
         procedure Log(message: String) is
         begin
             if DISPLAY_GATE_STATE then
@@ -229,6 +259,7 @@ package body IO is
         end Log;
     begin
         loop
+            -- Wait for a car to call leave
             accept leave do
                 Log("A car wants to leave!");
                 SimulatorState.SetExitRequest(True);
@@ -240,6 +271,7 @@ package body IO is
             SimulatorState.DecCarCnt;
 
             Log("Waiting for car to drive through...");
+            -- Wait for car to call left, signaling it has finished leaving
             accept left do
                 null;
             end left;
@@ -252,12 +284,13 @@ package body IO is
         end loop;
     end ExitGateSimulator;
 
-    type Car_State is (Driving, Parked);
+    type CarState is (Driving, Parked);
 
     task body Car is
-        state : Car_State := Driving;
+        state : CarState := Driving;
         success : Boolean;
 
+        -- Log only if it is configured, prepend everything with "Car [id]: "
         procedure Log(message: String) is
         begin
             if DISPLAY_CAR_STATE then
@@ -266,10 +299,13 @@ package body IO is
         end Log;
     begin
         loop
+            -- With 10% probability, try to enter the parking lot
             if state = Driving and SimulatorState.GetRandom < 10 then
                 Log("wanting to enter.");
                 SimulatorState.IncEntryQueueCnt;
                 success := False;
+                -- Try to enter, but abort if the simulator task did not accept
+                -- it in 30 seconds
                 select 
                     EntryGateSimulator.enter;
                     success := True;
@@ -277,6 +313,7 @@ package body IO is
                     delay 30.0;
                 end select;
                 SimulatorState.DecEntryQueueCnt;
+
                 if success then
                     Log("driving through gate!");
                     delay 2.0;
@@ -287,9 +324,11 @@ package body IO is
                 else
                     Log("giving up.");
                 end if;
+            -- With 3% probability, try to leave the parking lot
             elsif state = Parked and SimulatorState.GetRandom < 3 then
                 Log("wanting to leave.");
                 SimulatorState.IncExitQueueCnt;
+                -- We don't abort after 30s in this case
                 ExitGateSimulator.leave;
                 SimulatorState.DecExitQueueCnt;
                 Log("driving through gate!");
@@ -302,6 +341,8 @@ package body IO is
             delay 1.0;
         end loop;
     end Car;
+
+    -- The following procedures just read from the state
 
     procedure Read(ER: out EntryRequest) is
     begin
@@ -337,8 +378,10 @@ package body IO is
     begin
         SimulatorState.SetSignalState(S);
     end Write;
+
 begin
     SimulatorState.InitRandom;
+    -- Create the cars
     for x in cars'Range loop
         cars(x) := new Car(x);
     end loop;

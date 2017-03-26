@@ -12,6 +12,7 @@ package body Control_Procedures is
         diff : Integer;
     begin
         diff := 1000 - Integer(PR);
+        -- convert difference to pressure setting, but check bounds
         if diff > Integer(PressureSetting'Last) then
             PS := PressureSetting'Last;
         elsif diff <= Integer(PressureSetting'First) then

@@ -11,15 +11,20 @@ void *entry_controller(void *args) {
 
     while (1) {
         read_entry_request(&entry_request);
+        // If a car wants to enter
         if (entry_request) {
+            // Check if parking lot is not already full
             if (parking_spots < NUM_PARKING_SPOTS) {
                 parking_spots++;
+                // Open gate
                 write_entry_gate_state(GATE_OPEN);
+                // Wait until the sensor is not blocked any more (car must be through then)
                 entry_sensor_state = true;
                 while (entry_sensor_state) {
                     read_entry_sensor_state(&entry_sensor_state);
                     delay_ms(100);
                 }
+                // Close gate
                 write_entry_gate_state(GATE_CLOSED);
             }
         }
@@ -34,14 +39,18 @@ void *exit_controller(void *args) {
 
     while (1) {
         read_exit_request(&exit_request);
+        // If a car wants to leave
         if (exit_request) {
             parking_spots--;
+            // Open gate
             write_exit_gate_state(GATE_OPEN);
+            // Wait until the sensor is not blocked any more (car must be through then)
             exit_sensor_state = true;
             while (exit_sensor_state) {
                 read_exit_sensor_state(&exit_sensor_state);
                 delay_ms(100);
             }
+            // Close gate
             write_exit_gate_state(GATE_CLOSED);
         }
         delay_ms(100);

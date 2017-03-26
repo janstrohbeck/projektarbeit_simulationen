@@ -10,6 +10,7 @@ void convert_temp(temp_reading_t TR, heater_setting_t *HS) {
 
 void convert_pressure(pressure_reading_t PR, pressure_setting_t *PS) {
     int diff = 1000 - PR;
+    // convert difference to pressure setting, but check bounds
     if (diff > MAX_PRESSURE_SETTING) {
         *PS = MAX_PRESSURE_SETTING;
     } else if (diff < MIN_PRESSURE_SETTING) {
